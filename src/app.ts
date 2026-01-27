@@ -3,6 +3,9 @@ import cors from "cors";
 import { config } from "./config";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
+import { UserRoutes } from "./modules/user/user.routes";
+import { errorHandler } from "./middleware/errorHandler";
+import { notFoundRoutes } from "./middleware/routeNotFound";
 
 const app: Application = express();
 
@@ -13,8 +16,6 @@ app.use(
     credentials: true,
   }),
 );
-
-app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
@@ -30,5 +31,10 @@ app.get("/", (req: Request, res: Response) => {
     },
   });
 });
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
+app.use("/api/me", UserRoutes);
+
+app.use(errorHandler);
+app.use(notFoundRoutes);
 export default app;

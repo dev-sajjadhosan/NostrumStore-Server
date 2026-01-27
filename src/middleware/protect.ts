@@ -1,0 +1,39 @@
+import { NextFunction, Request, Response } from "express";
+import { auth } from "../lib/auth";
+import { Role } from "../../generated/prisma/enums";
+
+export const protect = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    let session = await auth.api.getSession({
+      headers: req.headers as any,
+    });
+
+    if (!session) {
+      return res
+        .status(401)
+        .json({ success: false, message: "You are not authorize." });
+    }
+
+    // if (!session.user.emailVerified) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "You Email is not verified. Please Verified your email.",
+    //   });
+    // }
+
+    req.user = {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+      role: session.user.role as Role,
+      emailVerified: session.user.emailVerified,
+    };
+    next();
+  } catch (err) {
+    throw err;
+  }
+};
