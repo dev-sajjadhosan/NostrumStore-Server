@@ -61,10 +61,53 @@ const getAllCategories = async ({
     },
   };
 };
-// const getSingleCategories = async () => {};
+const getSingleCategoriesById = async (id: string | undefined) => {
+  return prisma.categories.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      medicines: true,
+    },
+  });
+};
+
+const updateCategoryStatus = async (id: string, data: any) => {
+  const isExist = await prisma.categories.findFirstOrThrow({
+    where: { id },
+    select: { id: true, status: true },
+  });
+
+  if (data?.status === isExist.status) {
+    return "Status already exist.";
+  }
+
+  if (data.status) {
+    return prisma.categories.update({
+      where: { id: isExist.id },
+      data: {
+        status: data?.status,
+      },
+    });
+  }
+  return "Action can't perform.";
+};
+
+const deleteCategories = async (id: string | undefined) => {
+  const isExist = await prisma.categories.findFirstOrThrow({
+    where: { id },
+    select: { id: true },
+  });
+
+  return prisma.categories.delete({
+    where: { id: isExist.id },
+  });
+};
 
 export const CategoriesService = {
   createCategories,
-    getAllCategories,
-  //   getSingleCategories,
+  getAllCategories,
+  getSingleCategoriesById,
+  updateCategoryStatus,
+  deleteCategories,
 };

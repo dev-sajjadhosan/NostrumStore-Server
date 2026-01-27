@@ -1,7 +1,13 @@
+enum CategoryStatus {
+  BAN
+  UNBAN
+}
+
 model Categories {
-  id          String      @id @default(uuid())
-  name        String      @unique
+  id          String         @id @default(uuid())
+  name        String         @unique
   description String?
+  status      CategoryStatus @default(UNBAN)
   medicines   Medicines[]
 
   createdAt DateTime @default(now())
