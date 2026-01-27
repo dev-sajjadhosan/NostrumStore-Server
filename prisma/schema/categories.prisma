@@ -1,9 +1,9 @@
 model Categories {
   id          String      @id @default(uuid())
   name        String      @unique
-  description String
+  description String?
   medicines   Medicines[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
