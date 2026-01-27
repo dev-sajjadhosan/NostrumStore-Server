@@ -32,13 +32,15 @@ app.get("/", (req: Request, res: Response) => {
     },
   });
 });
+
+
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/api/me", UserRoutes);
-app.use("/api/medicines", MedicinesRoutes);
+app.use("/api", MedicinesRoutes);
 //categories - (C|U|R|D)
 
-app.use(notFoundRoutes);
 app.use(errorHandler);
+app.use(notFoundRoutes);
 
 export default app;

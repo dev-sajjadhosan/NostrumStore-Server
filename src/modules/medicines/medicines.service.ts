@@ -79,6 +79,12 @@ const getAllMedicines = async ({
   };
 };
 
+const getSingleMedicineById = async (id: string) => {
+  return prisma.medicines.findUniqueOrThrow({
+    where: { id },
+  });
+};
+
 const createMedicine = async ({
   user,
   data,
@@ -114,10 +120,16 @@ const updateMedicine = async ({
   });
 };
 
-// ! Medicine Delete service and others (...)
+const deleteMedicine = async (id: string) => {
+  return await prisma.medicines.delete({
+    where: { id },
+  });
+};
 
 export const MedicinesService = {
   getAllMedicines,
+  getSingleMedicineById,
   createMedicine,
   updateMedicine,
+  deleteMedicine,
 };

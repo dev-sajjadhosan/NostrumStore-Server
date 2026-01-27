@@ -5,19 +5,27 @@ import { restrictRole } from "../../middleware/restrictRoles";
 
 const router = Router();
 
-router.get("/", MedicinesController.getAllMedicines);
+router.get("/medicines", MedicinesController.getAllMedicines); // Public
+router.get("/medicines/:id", MedicinesController.getSingleMedicineById); // Public
 router.post(
-  "/",
+  "/seller/medicines",
   //   protect,
   //   restrictRole("SELLER"),
   MedicinesController.createMedicine,
-); // protect,
+);
 
-router.patch(
-  "/:id",
+router.put(
+  "/seller/medicines/:id",
   //   protect,
   //   restrictRole("SELLER"),
   MedicinesController.updateMedicine,
+);
+
+router.delete(
+  "/seller/medicines/:id",
+  // protect,
+  // restrictRole("SELLER"),
+  MedicinesController.deleteMedicine,
 );
 
 export const MedicinesRoutes = router;

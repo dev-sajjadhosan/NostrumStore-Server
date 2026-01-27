@@ -46,7 +46,21 @@ const createMedicine = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateMedicine = catchAsync(async (req, res) => {
+const getSingleMedicineById = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const result = await MedicinesService.getSingleMedicineById(id as string);
+
+    res.status(200).json({
+      success: true,
+      message: "Medicine data fetched successfully.",
+      data: result,
+    });
+  },
+);
+
+const updateMedicine = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
   const { id } = req.params;
   const data = req.body as MedicinesUpdateInput;
@@ -59,8 +73,20 @@ const updateMedicine = catchAsync(async (req, res) => {
   });
 });
 
+const deleteMedicine = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await MedicinesService.deleteMedicine(id as string);
+  res.status(200).json({
+    success: true,
+    message: "Medicine delete successfully.",
+    data: result,
+  });
+});
+
 export const MedicinesController = {
   getAllMedicines,
+  getSingleMedicineById,
   createMedicine,
   updateMedicine,
+  deleteMedicine,
 };
