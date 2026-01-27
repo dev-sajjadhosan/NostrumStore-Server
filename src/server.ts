@@ -1,26 +1,22 @@
-import express from "express";
-import cors from "cors";
+import app from "./app";
+import { config } from "./config";
+import { prisma } from "./lib/prisma";
 
-const app = express();
+const port = config.port;
 
-app.get("/", (req, res) => {
-  res.json({
-    Name: "Nostrum Store",
-    Message:
-      "Welcome to the Nostrum Store Server. This is just an basic path to see this server working or not. So, We Wish be safe and healthy.",
-    Database: "Local Storage",
-    Database_Connection: false,
-    Running: true,
-    Authenticated: false,
-    Mode: "Development",
-    Version: "/api/v1",
-    Created: "01/27/2026",
-  });
-});
+async function main() {
+  try {
+    await prisma.$connect();
+    console.log("Database connected successfully.");
+    app.listen(port, () => {
+      console.log(`The Server is running on Port: [${port}]`);
+      console.log(`Url: http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.log("An error occurred: ", err);
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+}
 
-app.listen(5000, () => {
-  console.log("*_*".repeat(30));
-  console.log(`The Server is running on PORT: {${5000}} &&`);
-  console.log(`The Server is Url: http://localhost:${5000}`);
-  console.log("*_*".repeat(30));
-});
+main();

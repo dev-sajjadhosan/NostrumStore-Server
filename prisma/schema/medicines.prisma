@@ -1,0 +1,22 @@
+// Pharmacy.prisma
+model Medicines {
+    id         String     @id @default(uuid())
+    sellerId   String
+    seller     User       @relation(fields: [sellerId], references: [id])
+    categoryId String
+    category   Categories @relation(fields: [categoryId], references: [id])
+
+    name        String   @db.VarChar(200)
+    description String   @db.Text
+    price       Decimal  @db.Decimal(10, 2) 
+    stock       Int      @default(0) 
+    image       String
+    tags        String[]
+    views       Int      @default(0)
+
+    orders  OrderItem[]
+    reviews Reviews[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
