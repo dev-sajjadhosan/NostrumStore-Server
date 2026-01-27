@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { CategoriesService } from "./categories.service";
+import { paginationHelpers } from "../../helpers/paginationHelpers";
 
 const createCategories = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
-  const result = await CategoriesService.createCategories({data});
+  const result = await CategoriesService.createCategories({ data });
 
   res.status(201).json({
     success: true,
@@ -13,4 +14,29 @@ const createCategories = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const CategoriesController = {createCategories};
+const getAllCategories = catchAsync(async (req: Request, res: Response) => {
+  const { search } = req.query;
+  const isSearch = typeof search === "string" ? search : undefined;
+  const options = paginationHelpers(req.query);
+
+  const { data, pagination } = await CategoriesService.getAllCategories({
+    search: isSearch as string,
+    options,
+  });
+
+  if (data.length <= 0) {
+    res.status(200).json({
+      success: true,
+      message: "Categories fetched successfully",
+      empty: true,
+      data: [],
+    });
+  }
+  res.status(200).json({
+    success: true,
+    message: "Categories fetched successfully",
+    data: { data, pagination },
+  });
+});
+
+export const CategoriesController = { createCategories, getAllCategories };
