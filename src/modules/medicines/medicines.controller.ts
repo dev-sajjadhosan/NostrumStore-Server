@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { MedicinesService } from "./medicines.service";
+import { string } from "better-auth/*";
+import { MedicinesUpdateInput } from "../../../generated/prisma/models";
 
 const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
   const { search } = req.query;
@@ -14,8 +16,6 @@ const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
     tags,
     options,
   });
-
-  console.log(data.length <= 0);
 
   if (data.length <= 0) {
     return res.status(200).json({
@@ -33,4 +33,34 @@ const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const MedicinesController = { getAllMedicines };
+const createMedicine = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const data = req.body;
+
+  const result = await MedicinesService.createMedicine({ user, data });
+
+  res.status(201).json({
+    success: true,
+    message: "Medicine created successfully.",
+    data: result,
+  });
+});
+
+const updateMedicine = catchAsync(async (req, res) => {
+  const user = req?.user;
+  const { id } = req.params;
+  const data = req.body as MedicinesUpdateInput;
+
+  const result = await MedicinesService.updateMedicine({ id, user, data });
+  res.status(201).json({
+    success: true,
+    message: "Medicine updated successfully.",
+    data: result,
+  });
+});
+
+export const MedicinesController = {
+  getAllMedicines,
+  createMedicine,
+  updateMedicine,
+};

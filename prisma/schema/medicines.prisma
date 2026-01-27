@@ -7,7 +7,7 @@ model Medicines {
     category   Categories @relation(fields: [categoryId], references: [id])
 
     name        String   @db.VarChar(200)
-    group       String?   @db.VarChar(255)
+    group       String?  @db.VarChar(255)
     description String   @db.Text
     price       Decimal  @db.Decimal(10, 2)
     stock       Int      @default(0)
@@ -20,4 +20,7 @@ model Medicines {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    @@unique([name, sellerId])
+    @@index([categoryId])
 }

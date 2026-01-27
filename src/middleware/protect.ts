@@ -18,12 +18,12 @@ export const protect = async (
         .json({ success: false, message: "You are not authorize." });
     }
 
-    // if (!session.user.emailVerified) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: "You Email is not verified. Please Verified your email.",
-    //   });
-    // }
+    if (!session.user.emailVerified) {
+      return res.status(401).json({
+        success: false,
+        message: "You Email is not verified. Please Verified your email.",
+      });
+    }
 
     req.user = {
       id: session.user.id,

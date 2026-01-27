@@ -1,4 +1,7 @@
-import { MedicinesWhereInput } from "../../../generated/prisma/models";
+import {
+  MedicinesUpdateInput,
+  MedicinesWhereInput,
+} from "../../../generated/prisma/models";
 import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
@@ -76,6 +79,45 @@ const getAllMedicines = async ({
   };
 };
 
+const createMedicine = async ({
+  user,
+  data,
+}: {
+  user: RequestUser | undefined;
+  data: any;
+}) => {
+  return prisma.medicines.create({
+    data: {
+      ...data,
+      sellerId: user?.id,
+    },
+  });
+};
 
+const updateMedicine = async ({
+  id,
+  user,
+  data,
+}: {
+  id: any;
+  user: RequestUser | undefined;
+  data: MedicinesUpdateInput;
+}) => {
+  const isExist = await prisma.medicines.findUnique({
+    where: { id },
+    select: { id: true },
+  });
 
-export const MedicinesService = { getAllMedicines };
+  return await prisma.medicines.update({
+    where: { id: isExist?.id, sellerId: user?.id },
+    data,
+  });
+};
+
+// ! Medicine Delete service and others (...)
+
+export const MedicinesService = {
+  getAllMedicines,
+  createMedicine,
+  updateMedicine,
+};
