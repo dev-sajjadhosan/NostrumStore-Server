@@ -7,9 +7,10 @@ model Medicines {
     category   Categories @relation(fields: [categoryId], references: [id])
 
     name        String   @db.VarChar(200)
+    group       String?   @db.VarChar(255)
     description String   @db.Text
-    price       Decimal  @db.Decimal(10, 2) 
-    stock       Int      @default(0) 
+    price       Decimal  @db.Decimal(10, 2)
+    stock       Int      @default(0)
     image       String
     tags        String[]
     views       Int      @default(0)

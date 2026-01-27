@@ -15,7 +15,7 @@ model Orders {
     status     OrdersStatus @default(PENDING)
     address    String
 
-    items OrderItem[] 
+    items OrderItem[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -28,6 +28,8 @@ model OrderItem {
     medicineId String
     medicine   Medicines @relation(fields: [medicineId], references: [id])
 
-    quantity        Int     @default(1)
-    priceAtPurchase Decimal @db.Decimal(10, 2) 
+    quantity        Int      @default(1)
+    priceAtPurchase Decimal  @db.Decimal(10, 2)
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
 }

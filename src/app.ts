@@ -6,6 +6,7 @@ import { auth } from "./lib/auth";
 import { UserRoutes } from "./modules/user/user.routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFoundRoutes } from "./middleware/routeNotFound";
+import { MedicinesRoutes } from "./modules/medicines/medicines.routes";
 
 const app: Application = express();
 
@@ -34,7 +35,10 @@ app.get("/", (req: Request, res: Response) => {
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/api/me", UserRoutes);
+app.use("/api/medicines", MedicinesRoutes);
+//categories - (C|U|R|D)
 
-app.use(errorHandler);
 app.use(notFoundRoutes);
+app.use(errorHandler);
+
 export default app;
