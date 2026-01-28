@@ -11,9 +11,15 @@ router.patch("/profile/me", protect, UserController.updateUser);
 router.get(
   "/admin/users",
   protect,
-//   restrictRole("ADMIN"),
+  //   restrictRole("ADMIN"),
   UserController.getAllUsers,
 );
 
+router.patch(
+  "/admin/users/:id",
+  protect,
+//   restrictRole("ADMIN"),
+  UserController.updateUserStatus,
+);
 
 export const UserRoutes = router;

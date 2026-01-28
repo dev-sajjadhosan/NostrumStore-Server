@@ -111,4 +111,20 @@ const getAllUsers = async ({
   };
 };
 
-export const UserService = { getUser, updateUser, getAllUsers };
+const updateUserStatus = async (id: string | undefined, data: any) => {
+  const isExist = await prisma.user.findUniqueOrThrow({
+    where: { id },
+    select: { id: true },
+  });
+
+  return await prisma.user.update({
+    where: {
+      id: isExist.id,
+    },
+    data: {
+      status: data?.status,
+    },
+  });
+};
+
+export const UserService = { getUser, updateUser, getAllUsers,updateUserStatus };
