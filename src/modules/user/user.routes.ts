@@ -18,8 +18,22 @@ router.get(
 router.patch(
   "/admin/users/:id",
   protect,
-//   restrictRole("ADMIN"),
+  //   restrictRole("ADMIN"),
   UserController.updateUserStatus,
+);
+
+router.delete(
+  "/profile/me",
+  protect,
+  restrictRole("CUSTOMER"),
+  UserController.deleteUser,
+);
+
+router.delete(
+  "/admin/users/:id",
+  protect,
+  restrictRole("ADMIN"),
+  UserController.deleteUser,
 );
 
 export const UserRoutes = router;

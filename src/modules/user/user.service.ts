@@ -127,4 +127,18 @@ const updateUserStatus = async (id: string | undefined, data: any) => {
   });
 };
 
-export const UserService = { getUser, updateUser, getAllUsers,updateUserStatus };
+const deleteUser = async (id: string) => {
+  return await prisma.user.delete({
+    where: {
+      id,
+    },
+  });
+};
+
+export const UserService = {
+  getUser,
+  updateUser,
+  getAllUsers,
+  updateUserStatus,
+  deleteUser
+};
