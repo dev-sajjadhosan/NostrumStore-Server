@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "npx tsx watch src/server.ts",
     "seed:admin": "npx tsx src/script/seedAdmin.ts",
-    "build": "prisma generate && tsc"
+    "build": "npx prisma generate && tsc"
   },
   "keywords": [],
   "author": "",
