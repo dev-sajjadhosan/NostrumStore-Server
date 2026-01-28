@@ -35,13 +35,12 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/api/profile/me", UserRoutes);
 app.use("/api", MedicinesRoutes);
 app.use("/api/categories", CategoriesRouter);
-app.use("/api/orders", OrdersRoutes);
+app.use("/api", OrdersRoutes);
 //categories - (C|U|R|D)
 
 app.use(errorHandler);

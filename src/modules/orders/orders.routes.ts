@@ -6,10 +6,25 @@ import { restrictRole } from "../../middleware/restrictRoles";
 const router = Router();
 
 router.post(
-  "/",
+  // Customer
+  "/orders",
   protect,
-//   restrictRole("ADMIN", "SELLER"),
+  restrictRole("CUSTOMER"),
   OrderController.createOrder,
 );
+
+router.get(
+  "/seller/orders",
+  protect,
+  //   restrictRole('SELLER'),
+  OrderController.getAllOrders,
+); // Seller
+
+router.patch(
+  "/seller/orders/:id",
+  protect,
+  // restrictRole("SELLER"),
+  OrderController.updateOrderStatus,
+); // update orders status
 
 export const OrdersRoutes = router;

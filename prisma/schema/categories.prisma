@@ -6,6 +6,7 @@ enum CategoryStatus {
 model Categories {
   id          String         @id @default(uuid())
   name        String         @unique
+  image       String
   description String?
   status      CategoryStatus @default(UNBAN)
   medicines   Medicines[]
