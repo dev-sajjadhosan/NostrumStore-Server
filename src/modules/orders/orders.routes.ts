@@ -6,7 +6,6 @@ import { restrictRole } from "../../middleware/restrictRoles";
 const router = Router();
 
 router.post(
-  // Customer
   "/orders",
   protect,
   restrictRole("CUSTOMER"),
@@ -14,17 +13,33 @@ router.post(
 );
 
 router.get(
+  "/orders",
+  protect,
+  restrictRole("CUSTOMER"),
+  OrderController.getAllUserOrders,
+);
+
+router.get(
+  "/orders/:id",
+  protect,
+  restrictRole("CUSTOMER"),
+  OrderController.getOrderById,
+);
+
+// -----------------------------------------------//
+
+router.get(
   "/seller/orders",
   protect,
-  //   restrictRole('SELLER'),
+  restrictRole("SELLER"),
   OrderController.getAllOrders,
-); // Seller
+);
 
 router.patch(
   "/seller/orders/:id",
   protect,
-  // restrictRole("SELLER"),
+  restrictRole("SELLER"),
   OrderController.updateOrderStatus,
-); // update orders status
+);
 
 export const OrdersRoutes = router;

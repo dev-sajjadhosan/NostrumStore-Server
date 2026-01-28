@@ -17,6 +17,40 @@ const createOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllUserOrders = catchAsync(async (req: Request, res: Response) => {
+  const user = req?.user;
+  const { search, status } = req.query;
+  const isSearch = typeof search === "string" ? search : undefined;
+  const isStatus = typeof status === "string" ? status : undefined;
+  const options = paginationHelpers(req.query);
+
+  const result = await OrderService.getAllOrders({
+    user,
+    options,
+    search: isSearch,
+    status: isStatus,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Orders fetched successfully!",
+    data: result,
+  });
+});
+
+const getOrderById = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const { id } = req.params;
+
+  const result = await OrderService.getOrderById(user, id as string);
+
+  res.status(200).json({
+    success: true,
+    message: "Order fetched successfully!",
+    data: result,
+  });
+});
+
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
   const { search, status } = req.query;
@@ -52,4 +86,10 @@ const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const OrderController = { createOrder, getAllOrders, updateOrderStatus };
+export const OrderController = {
+  createOrder,
+  getAllOrders,
+  updateOrderStatus,
+  getAllUserOrders,
+  getOrderById,
+};

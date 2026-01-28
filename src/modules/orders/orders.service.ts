@@ -66,6 +66,104 @@ const createOrder = async ({
   });
 };
 
+const getAllUserOrders = async ({
+  user,
+  options,
+  search,
+  status,
+}: {
+  user: RequestUser | undefined;
+  options: PgOptionsRs;
+  search: string | undefined;
+  status: string | undefined;
+}) => {
+  const { page, skip, limit, sortBy, sortOrder } = options;
+  const conditions: OrdersWhereInput[] = [];
+
+  conditions.push({
+    customerId: user?.id,
+  });
+
+  if (search) {
+    conditions.push({
+      OR: [
+        { customer: { name: { contains: search, mode: "insensitive" } } },
+        { address: { contains: search, mode: "insensitive" } },
+        {
+          items: {
+            some: {
+              medicine: { name: { contains: search, mode: "insensitive" } },
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  if (status) {
+    conditions.push({
+      status: status as OrdersStatus,
+    });
+  }
+
+  const result = await prisma.orders.findMany({
+    skip,
+    take: limit,
+    where: { AND: conditions },
+    include: {
+      customer: true,
+      items: {
+        where: {
+          AND: [
+            { medicine: { sellerId: user?.id } },
+
+            search
+              ? {
+                  medicine: { name: { contains: search, mode: "insensitive" } },
+                }
+              : {},
+          ],
+        },
+        include: {
+          medicine: true,
+        },
+      },
+    },
+    orderBy: { [sortBy]: sortOrder },
+  });
+
+  const total = await prisma.orders.count({
+    where: { AND: conditions },
+  });
+
+  return {
+    data: result,
+    pagination: {
+      page,
+      pages: Math.ceil(total / limit),
+      limit,
+      total,
+    },
+  };
+};
+
+const getOrderById = async (
+  user: RequestUser | undefined,
+  id: string | undefined,
+) => {
+  return await prisma.orders.findUniqueOrThrow({
+    where: {
+      id,
+      customerId: user?.id,
+    },
+    include: {
+      items: true,
+    },
+  });
+};
+
+// ---------------------------------------------------//
+
 const getAllOrders = async ({
   user,
   options,
@@ -78,7 +176,7 @@ const getAllOrders = async ({
   status: string | undefined;
 }) => {
   const { page, skip, limit, sortBy, sortOrder } = options;
-  const conditions: any[] = [];
+  const conditions: OrdersWhereInput[] = [];
 
   const sellerCondition = {
     items: {
@@ -107,7 +205,7 @@ const getAllOrders = async ({
 
   if (status) {
     conditions.push({
-      status: status,
+      status: status as OrdersStatus,
     });
   }
 
@@ -181,4 +279,10 @@ const updateOrderStatus = async (
   });
 };
 
-export const OrderService = { createOrder, getAllOrders, updateOrderStatus };
+export const OrderService = {
+  createOrder,
+  getAllOrders,
+  updateOrderStatus,
+  getAllUserOrders,
+  getOrderById,
+};
