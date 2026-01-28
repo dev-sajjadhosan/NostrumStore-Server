@@ -16,15 +16,15 @@ router.post(
 
 router.put(
   "/seller/medicines/:id",
-  //   protect,
-  //   restrictRole("SELLER"),
+    protect,
+    restrictRole("SELLER"),
   MedicinesController.updateMedicine,
 );
 
 router.delete(
   "/seller/medicines/:id",
-  // protect,
-  // restrictRole("SELLER"),
+  protect,
+  restrictRole("SELLER"),
   MedicinesController.deleteMedicine,
 );
 

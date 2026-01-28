@@ -41,7 +41,6 @@ app.use("/api", UserRoutes);
 app.use("/api", MedicinesRoutes);
 app.use("/api/categories", CategoriesRouter);
 app.use("/api", OrdersRoutes);
-//categories - (C|U|R|D)
 
 app.use(errorHandler);
 app.use(notFoundRoutes);
