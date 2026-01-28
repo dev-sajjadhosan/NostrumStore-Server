@@ -9,8 +9,8 @@ router.get("/medicines", MedicinesController.getAllMedicines); // Public
 router.get("/medicines/:id", MedicinesController.getSingleMedicineById); // Public
 router.post(
   "/seller/medicines",
-  //   protect,
-  //   restrictRole("SELLER"),
+    protect,
+    restrictRole("SELLER", 'CUSTOMER'),
   MedicinesController.createMedicine,
 );
 

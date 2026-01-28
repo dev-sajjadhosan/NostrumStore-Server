@@ -56,6 +56,9 @@ const getAllMedicines = async ({
     where: {
       AND: conditions,
     },
+    include: {
+      category: true,
+    },
     orderBy: {
       [sortBy]: sortOrder,
     },
@@ -80,6 +83,14 @@ const getAllMedicines = async ({
 };
 
 const getSingleMedicineById = async (id: string) => {
+  await prisma.medicines.update({
+    where: { id },
+    data: {
+      views: {
+        increment: 1,
+      },
+    },
+  });
   return prisma.medicines.findUniqueOrThrow({
     where: { id },
   });
@@ -92,7 +103,7 @@ const createMedicine = async ({
   user: RequestUser | undefined;
   data: any;
 }) => {
-  return prisma.medicines.create({
+  return await prisma.medicines.create({
     data: {
       ...data,
       sellerId: user?.id,
