@@ -26,8 +26,6 @@ router.get(
   OrderController.getOrderById,
 );
 
-// -----------------------------------------------//
-
 router.get(
   "/seller/orders",
   protect,

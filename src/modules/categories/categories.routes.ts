@@ -23,8 +23,8 @@ router.put(
 
 router.delete(
   "/:id",
-    // protect,
-    // restrictRole("ADMIN"),
+  // protect,
+  // restrictRole("ADMIN"),
   CategoriesController.deleteCategories,
 );
 export const CategoriesRouter = router;

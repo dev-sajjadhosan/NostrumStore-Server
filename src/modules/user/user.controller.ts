@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { UserService } from "./user.service";
+import { paginationHelpers } from "../../helpers/paginationHelpers";
 
 const getUser = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
@@ -22,4 +23,26 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
     .json({ data: result, success: true, message: "User update success." });
 });
 
-export const UserController = { getUser,updateUser };
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const role = req?.user?.role;
+  const { search, status } = req.query;
+  const options = paginationHelpers(req.params);
+
+  const isSearch = typeof search === "string" ? search : undefined;
+  const isStatus = typeof status === "string" ? status : undefined;
+
+  const result = await UserService.getAllUsers({
+    options,
+    search: isSearch,
+    role,
+    status: isStatus,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Users fetched successfully!",
+    data: result,
+  });
+});
+
+export const UserController = { getUser, updateUser ,getAllUsers};
