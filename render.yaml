@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nostrum-store-server
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
