@@ -71,6 +71,25 @@ const getAllOrders = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getAllOrdersAdmin = catchAsync(async (req: Request, res: Response) => {
+  const user = req?.user;
+  const { search, status } = req.query;
+  const isSearch = typeof search === "string" ? search : undefined;
+  const isStatus = typeof status === "string" ? status : undefined;
+  const options = paginationHelpers(req.query);
+
+  const result = await OrderService.getAllOrdersAdmin({
+    options,
+    search: isSearch,
+    status: isStatus,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Orders fetched successfully!",
+    data: result,
+  });
+});
 
 const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
@@ -92,4 +111,5 @@ export const OrderController = {
   updateOrderStatus,
   getAllUserOrders,
   getOrderById,
+  getAllOrdersAdmin
 };

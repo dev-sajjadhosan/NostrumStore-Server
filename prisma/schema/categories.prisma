@@ -1,15 +1,17 @@
 enum CategoryStatus {
-  BAN
-  UNBAN
+  ACTIVE
+  RESTRICTED
+  INACTIVE
 }
 
 model Categories {
   id          String         @id @default(uuid())
   name        String         @unique
-  image       String
+  image       String?
   description String?
-  status      CategoryStatus @default(UNBAN)
+  status      CategoryStatus @default(ACTIVE)
   medicines   Medicines[]
+  slug        String         @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

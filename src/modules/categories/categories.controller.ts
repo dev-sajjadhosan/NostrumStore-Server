@@ -5,6 +5,7 @@ import { paginationHelpers } from "../../helpers/paginationHelpers";
 
 const createCategories = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
+
   const result = await CategoriesService.createCategories({ data });
 
   res.status(201).json({

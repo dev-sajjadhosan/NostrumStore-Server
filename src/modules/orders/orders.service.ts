@@ -250,6 +250,96 @@ const getAllOrders = async ({
   };
 };
 
+const getAllOrdersAdmin = async ({
+  options,
+  search,
+  status,
+}: {
+  options: PgOptionsRs;
+  search: string | undefined;
+  status: string | undefined;
+}) => {
+  const { page, skip, limit, sortBy, sortOrder } = options;
+  const conditions: OrdersWhereInput[] = [];
+
+  if (search) {
+    conditions.push({
+      OR: [
+        { customer: { name: { contains: search, mode: "insensitive" } } },
+        { address: { contains: search, mode: "insensitive" } },
+        {
+          items: {
+            some: {
+              medicine: { name: { contains: search, mode: "insensitive" } },
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  if (status) {
+    conditions.push({
+      status: status as OrdersStatus,
+    });
+  }
+
+  const result = await prisma.orders.findMany({
+    skip,
+    take: limit,
+    where: { AND: conditions },
+    include: {
+      customer: true,
+      items: {
+        where: {
+          AND: [
+            {
+              OR: [
+                {
+                  medicine: {
+                    name: {
+                      contains: search,
+                      mode: "insensitive",
+                    },
+                  },
+                },
+                {
+                  order: {
+                    customer: {
+                      name: {
+                        contains: search,
+                        mode: "insensitive",
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        include: {
+          medicine: true,
+        },
+      },
+    },
+    orderBy: { [sortBy]: sortOrder },
+  });
+
+  const total = await prisma.orders.count({
+    where: { AND: conditions },
+  });
+
+  return {
+    data: result,
+    pagination: {
+      page,
+      pages: Math.ceil(total / limit),
+      limit,
+      total,
+    },
+  };
+};
+
 const updateOrderStatus = async (
   id: string,
   data: { status?: OrdersStatus },
@@ -285,4 +375,5 @@ export const OrderService = {
   updateOrderStatus,
   getAllUserOrders,
   getOrderById,
+  getAllOrdersAdmin
 };

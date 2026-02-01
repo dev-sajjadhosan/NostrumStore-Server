@@ -41,11 +41,14 @@ const updateUser = async (user: RequestUser | undefined, data: any) => {
 const getAllUsers = async ({
   options,
   search,
+  user,
   role,
   status,
 }: {
   options: PgOptionsRs;
   search: string | undefined;
+  user: any;
+
   role: string | undefined;
   status: string | undefined;
 }) => {
@@ -101,7 +104,7 @@ const getAllUsers = async ({
   });
 
   return {
-    data: result,
+    data: result.filter((r) => r.id !== user?.id),
     pagination: {
       page,
       pages: Math.ceil(total / limit),

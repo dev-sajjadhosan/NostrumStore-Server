@@ -103,12 +103,16 @@ const createMedicine = async ({
   user: RequestUser | undefined;
   data: any;
 }) => {
-  console.log({user, data});
+  console.log(data);
+  const formattedData = {
+    ...data,
+    expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
+
+    image: data.image || "default-placeholder.png",
+    sellerId: user?.id,
+  };
   return await prisma.medicines.create({
-    data: {
-      ...data,
-      sellerId: user?.id,
-    },
+    data: formattedData,
   });
 };
 

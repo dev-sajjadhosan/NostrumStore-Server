@@ -38,6 +38,8 @@ const createMedicine = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
   const result = await MedicinesService.createMedicine({ user, data });
 
+  console.log(result);
+
   res.status(201).json({
     success: true,
     message: "Medicine created successfully.",

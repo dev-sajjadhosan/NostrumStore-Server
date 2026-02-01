@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { UserService } from "./user.service";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
+import { Role } from "../../../generated/prisma/enums";
 
 const getUser = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
@@ -24,17 +25,19 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const role = req?.user?.role;
-  const { search, status } = req.query;
+  const user = req?.user;
+  const { search, status,role } = req.query;
   const options = paginationHelpers(req.params);
 
   const isSearch = typeof search === "string" ? search : undefined;
   const isStatus = typeof status === "string" ? status : undefined;
+  const isRole = typeof status === "string" ? role : undefined;
 
   const result = await UserService.getAllUsers({
     options,
     search: isSearch,
-    role,
+    user,
+    role: isRole as Role,
     status: isStatus,
   });
 

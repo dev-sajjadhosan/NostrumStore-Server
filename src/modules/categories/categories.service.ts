@@ -31,6 +31,7 @@ const getAllCategories = async ({
         ],
       },
     },
+    include: { medicines: true },
     orderBy: {
       [sortBy]: sortOrder,
     },
