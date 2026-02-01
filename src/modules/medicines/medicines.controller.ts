@@ -36,7 +36,6 @@ const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
 const createMedicine = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
   const data = req.body;
-
   const result = await MedicinesService.createMedicine({ user, data });
 
   res.status(201).json({

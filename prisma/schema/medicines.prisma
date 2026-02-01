@@ -1,4 +1,10 @@
-// Pharmacy.prisma
+enum UnitType {
+    Pcs
+    Strip
+    Box
+    Bottle
+}
+
 model Medicines {
     id         String     @id @default(uuid())
     sellerId   String
@@ -6,15 +12,27 @@ model Medicines {
     categoryId String
     category   Categories @relation(fields: [categoryId], references: [id])
 
-    name        String   @db.VarChar(200)
-    group       String?  @db.VarChar(255)
-    description String   @db.Text
-    price       Decimal  @db.Decimal(10, 2)
-    stock       Int      @default(0)
-    image       String
-    tags        String[]
-    views       Int      @default(0)
+    name        String  @db.VarChar(200) 
+    genericName String  @db.VarChar(200) 
+    strength    String? @db.VarChar(50) 
+    unitType    UnitType  @default(Pcs) 
 
+    group       String? @db.VarChar(255)
+    description String  @db.Text
+
+    price         Decimal  @db.Decimal(10, 2)
+    discountPrice Decimal? @db.Decimal(10, 2)
+    stock         Int      @default(0)
+
+    image String
+    tags  String[]
+
+   
+    isPrescriptionRequired Boolean   @default(false)
+    expiryDate             DateTime?
+    sku                    String?   @db.VarChar(100)
+
+    views   Int         @default(0)
     orders  OrderItem[]
     reviews Reviews[]
 

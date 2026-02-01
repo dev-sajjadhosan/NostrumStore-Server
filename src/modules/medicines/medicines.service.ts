@@ -103,6 +103,7 @@ const createMedicine = async ({
   user: RequestUser | undefined;
   data: any;
 }) => {
+  console.log({user, data});
   return await prisma.medicines.create({
     data: {
       ...data,

@@ -127,6 +127,25 @@ const updateUserStatus = async (id: string | undefined, data: any) => {
   });
 };
 
+const updateUserRole = async (id: string | undefined, data: any) => {
+  const isExist = await prisma.user.findUniqueOrThrow({
+    where: { id },
+  });
+
+  if (isExist.role === data?.role) {
+    return isExist;
+  }
+
+  return await prisma.user.update({
+    where: {
+      id: isExist.id,
+    },
+    data: {
+      role: data.role,
+    },
+  });
+};
+
 const deleteUser = async (id: string) => {
   return await prisma.user.delete({
     where: {
@@ -140,5 +159,6 @@ export const UserService = {
   updateUser,
   getAllUsers,
   updateUserStatus,
-  deleteUser
+  deleteUser,
+  updateUserRole,
 };

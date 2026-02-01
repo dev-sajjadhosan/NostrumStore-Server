@@ -7,6 +7,7 @@ const router = Router();
 
 router.get("/profile/me", protect, UserController.getUser);
 router.patch("/profile/me", protect, UserController.updateUser);
+router.patch("/profile/role/:id", protect, UserController.updateUserRole);
 
 router.get(
   "/admin/users",
