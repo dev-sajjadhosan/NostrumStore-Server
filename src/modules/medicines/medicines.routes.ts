@@ -7,17 +7,19 @@ const router = Router();
 
 router.get("/medicines", MedicinesController.getAllMedicines); // Public
 router.get("/medicines/:id", MedicinesController.getSingleMedicineById); // Public
+
+router.get("/seller/medicines", MedicinesController.getSellerAllMedicines);
 router.post(
   "/seller/medicines",
-    protect,
-    restrictRole("SELLER"),
+  protect,
+  restrictRole("SELLER"),
   MedicinesController.createMedicine,
 );
 
 router.put(
   "/seller/medicines/:id",
-    protect,
-    restrictRole("SELLER"),
+  protect,
+  restrictRole("SELLER"),
   MedicinesController.updateMedicine,
 );
 

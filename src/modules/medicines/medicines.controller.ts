@@ -2,8 +2,39 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { MedicinesService } from "./medicines.service";
-import { string } from "better-auth/*";
 import { MedicinesUpdateInput } from "../../../generated/prisma/models";
+
+const getSellerAllMedicines = catchAsync(
+  async (req: Request, res: Response) => {
+    const { search } = req.query;
+    const user = req?.user;
+    const isSearch = typeof search === "string" ? search : undefined;
+    const tags = req.query.tags ? (req.query.tags as string).split(",") : [];
+    const options = paginationHelpers(req.query);
+
+    const { data, pagination } = await MedicinesService.getSellerAllMedicines({
+      user,
+      search: isSearch,
+      tags,
+      options,
+    });
+
+    if (data.length <= 0) {
+      return res.status(200).json({
+        success: true,
+        message: "Medicine fetched success.",
+        empty: true,
+        data: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Medicine fetched success.",
+      data: { data, pagination },
+    });
+  },
+);
 
 const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
   const { search } = req.query;
@@ -90,4 +121,5 @@ export const MedicinesController = {
   createMedicine,
   updateMedicine,
   deleteMedicine,
+  getSellerAllMedicines,
 };

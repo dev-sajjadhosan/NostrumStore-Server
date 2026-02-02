@@ -6,6 +6,89 @@ import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
 
+const getSellerAllMedicines = async ({
+  user,
+  search,
+  tags,
+  options,
+}: {
+  user: any;
+  search: string | undefined;
+  tags: string[] | [];
+  options: PgOptionsRs;
+}) => {
+  const { limit: take, page, skip, sortBy, sortOrder } = options;
+  const conditions: MedicinesWhereInput[] = [];
+
+  if (search) {
+    conditions.push({
+      OR: [
+        {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          group: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          tags: {
+            has: search,
+          },
+        },
+      ],
+    });
+  }
+
+  if (tags.length > 0) {
+    conditions.push({
+      tags: {
+        hasEvery: tags,
+      },
+    });
+  }
+
+  const result = await prisma.medicines.findMany({
+    take,
+    skip,
+    where: {
+      AND: conditions,
+      sellerId: user?.id,
+    },
+    include: {
+      category: {
+        select: {
+          name: true
+        }
+      },
+    },
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+  });
+
+  const total = await prisma.medicines.count({
+    where: {
+      AND: conditions,
+    },
+  });
+
+  return {
+    data: result,
+    pagination: {
+      search,
+      page,
+      limit: take,
+      total,
+      pages: Math.ceil(total / take),
+    },
+  };
+};
+
 const getAllMedicines = async ({
   search,
   tags,
@@ -148,4 +231,5 @@ export const MedicinesService = {
   createMedicine,
   updateMedicine,
   deleteMedicine,
+  getSellerAllMedicines
 };
