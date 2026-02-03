@@ -16,6 +16,11 @@ model Orders {
     address    String
     phone      String?
     whatsapp   String?
+    payment    String
+    Subtotal   Decimal?     @default(0) @db.Decimal(10, 2)
+    Shipping   Decimal?     @default(0) @db.Decimal(10, 2)
+    Tax        Decimal?     @default(0) @db.Decimal(10, 2)
+    grandTotal Decimal?     @default(0) @db.Decimal(10, 2)
 
     items OrderItem[]
 

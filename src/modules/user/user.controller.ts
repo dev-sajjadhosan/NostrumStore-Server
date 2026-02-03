@@ -13,6 +13,15 @@ const getUser = catchAsync(async (req: Request, res: Response) => {
     message: "User fetched success.",
   });
 });
+const getProfile = catchAsync(async (req: Request, res: Response) => {
+  const user = req?.user;
+  const result = await UserService.getProfile(user);
+  res.status(200).json({
+    data: result,
+    success: true,
+    message: "Profile fetched success.",
+  });
+});
 
 const updateUser = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
@@ -26,7 +35,7 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
-  const { search, status,role } = req.query;
+  const { search, status, role } = req.query;
   const options = paginationHelpers(req.params);
 
   const isSearch = typeof search === "string" ? search : undefined;
@@ -65,7 +74,6 @@ const updateUserRole = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const data = req.body;
 
-
   const result = await UserService.updateUserRole(id as string, data);
 
   res.status(201).json({
@@ -87,6 +95,36 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const adminMetaData = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.adminMetaData();
+  res.status(200).json({
+    data: result,
+    success: true,
+    message: "admin meta fetched success.",
+  });
+});
+
+const sellerMetaData = catchAsync(async (req: Request, res: Response) => {
+  const user = req?.user;
+  console.log(user);
+  const result = await UserService.sellerMetaData(user?.id as string);
+  res.status(200).json({
+    data: result,
+    success: true,
+    message: "seller meta fetched success.",
+  });
+});
+
+const updateProfile = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const data = req.body;
+  const result = await UserService.updateProfile(user?.id as string, data);
+
+  res
+    .status(201)
+    .json({ data: result, success: true, message: "Profile update success." });
+});
+
 export const UserController = {
   getUser,
   updateUser,
@@ -94,4 +132,7 @@ export const UserController = {
   updateUserStatus,
   deleteUser,
   updateUserRole,
+  sellerMetaData,
+  adminMetaData,
+  updateProfile,getProfile
 };

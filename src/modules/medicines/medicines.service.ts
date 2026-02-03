@@ -40,6 +40,14 @@ const getSellerAllMedicines = async ({
             has: search,
           },
         },
+        {
+          category: {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        },
       ],
     });
   }
@@ -62,8 +70,8 @@ const getSellerAllMedicines = async ({
     include: {
       category: {
         select: {
-          name: true
-        }
+          name: true,
+        },
       },
     },
     orderBy: {
@@ -176,6 +184,16 @@ const getSingleMedicineById = async (id: string) => {
   });
   return prisma.medicines.findUniqueOrThrow({
     where: { id },
+    include: {
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+    },
   });
 };
 
@@ -186,7 +204,6 @@ const createMedicine = async ({
   user: RequestUser | undefined;
   data: any;
 }) => {
-  console.log(data);
   const formattedData = {
     ...data,
     expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
@@ -218,6 +235,35 @@ const updateMedicine = async ({
     data,
   });
 };
+const updateMedicineStock = async ({
+  id,
+  user,
+  data,
+}: {
+  id: any;
+  user: RequestUser | undefined;
+  data: { stock: number };
+}) => {
+  const isExist = await prisma.medicines.findUnique({
+    where: { id },
+    select: { id: true, stock: true },
+  });
+
+  if (!isExist) throw new Error("Medicine not found or unauthorized");
+
+  if (data?.stock < 0) {
+    return { error: "Stock cannot be negative" };
+  }
+
+  return await prisma.medicines.update({
+    where: { id: isExist?.id, sellerId: user?.id },
+    data: {
+      stock: {
+        increment: data?.stock,
+      },
+    },
+  });
+};
 
 const deleteMedicine = async (id: string) => {
   return await prisma.medicines.delete({
@@ -231,5 +277,6 @@ export const MedicinesService = {
   createMedicine,
   updateMedicine,
   deleteMedicine,
-  getSellerAllMedicines
+  getSellerAllMedicines,
+  updateMedicineStock,
 };

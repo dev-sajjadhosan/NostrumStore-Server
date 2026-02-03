@@ -48,15 +48,6 @@ const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
     options,
   });
 
-  if (data.length <= 0) {
-    return res.status(200).json({
-      success: true,
-      message: "Medicine fetched success.",
-      empty: true,
-      data: [],
-    });
-  }
-
   res.status(200).json({
     success: true,
     message: "Medicine fetched success.",
@@ -105,6 +96,19 @@ const updateMedicine = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateMedicineStock = catchAsync(async (req: Request, res: Response) => {
+  const user = req?.user;
+  const { id } = req.params;
+  const data = req.body as any;
+
+  const result = await MedicinesService.updateMedicineStock({ id, user, data });
+  res.status(201).json({
+    success: true,
+    message: "Medicine stock updated successfully.",
+    data: result,
+  });
+});
+
 const deleteMedicine = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await MedicinesService.deleteMedicine(id as string);
@@ -121,5 +125,6 @@ export const MedicinesController = {
   createMedicine,
   updateMedicine,
   deleteMedicine,
+  updateMedicineStock,
   getSellerAllMedicines,
 };

@@ -25,6 +25,13 @@ router.get(
   restrictRole("CUSTOMER"),
   OrderController.getOrderById,
 );
+router.patch(
+  "/orders/:id",
+  protect,
+  restrictRole("CUSTOMER"),
+  OrderController.updateCustomerOrderStatus,
+);
+
 
 router.get(
   "/seller/orders",
@@ -38,8 +45,6 @@ router.get(
   restrictRole("ADMIN"),
   OrderController.getAllOrdersAdmin,
 );
-
-
 
 router.patch(
   "/seller/orders/:id",

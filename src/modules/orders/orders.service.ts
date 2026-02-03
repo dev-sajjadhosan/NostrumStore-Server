@@ -18,7 +18,7 @@ const createOrder = async ({
 
       for (let item of data.items) {
         const medicine = await tx.medicines.findUnique({
-          where: { id: item.medicineId },
+          where: { id: item?.id },
         });
 
         if (!medicine || medicine.stock < item.quantity) {
@@ -31,13 +31,13 @@ const createOrder = async ({
         totalPrice += calculatePrice;
 
         orderItemsForPrisma.push({
-          medicineId: item.medicineId,
+          medicineId: item?.id,
           quantity: item.quantity,
           priceAtPurchase: medicine.price,
         });
 
         await tx.medicines.update({
-          where: { id: item.medicineId },
+          where: { id: item.id },
           data: {
             stock: { decrement: item.quantity },
           },
@@ -46,11 +46,9 @@ const createOrder = async ({
 
       return await tx.orders.create({
         data: {
+          ...data,
           customerId: user?.id as string,
-          address: data.address,
-          phone: data.phone,
-          whatsapp: data.whatsapp,
-          totalPrice: totalPrice,
+          totalPrice,
           items: {
             create: orderItemsForPrisma,
           },
@@ -115,8 +113,6 @@ const getAllUserOrders = async ({
       items: {
         where: {
           AND: [
-            { medicine: { sellerId: user?.id } },
-
             search
               ? {
                   medicine: { name: { contains: search, mode: "insensitive" } },
@@ -136,8 +132,42 @@ const getAllUserOrders = async ({
     where: { AND: conditions },
   });
 
+  const pending = await prisma.orders.count({
+    where: {
+      status: "PENDING",
+    },
+  });
+  const cancelled = await prisma.orders.count({
+    where: {
+      status: "CANCELLED",
+    },
+  });
+  const delivered = await prisma.orders.count({
+    where: {
+      status: "DELIVERED",
+    },
+  });
+  const processing = await prisma.orders.count({
+    where: {
+      status: "PROCESSING",
+    },
+  });
+  const shipped = await prisma.orders.count({
+    where: {
+      status: "SHIPPED",
+    },
+  });
+
   return {
     data: result,
+    meta: {
+      pending,
+      cancelled,
+      delivered,
+      processing,
+      shipped,
+      total,
+    },
     pagination: {
       page,
       pages: Math.ceil(total / limit),
@@ -157,7 +187,12 @@ const getOrderById = async (
       customerId: user?.id,
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          medicine: true,
+        },
+      },
+      customer: true,
     },
   });
 };
@@ -232,6 +267,7 @@ const getAllOrders = async ({
         },
       },
     },
+
     orderBy: { [sortBy]: sortOrder },
   });
 
@@ -239,8 +275,41 @@ const getAllOrders = async ({
     where: { AND: conditions },
   });
 
+  const pending = await prisma.orders.count({
+    where: {
+      status: "PENDING",
+    },
+  });
+  const cancelled = await prisma.orders.count({
+    where: {
+      status: "CANCELLED",
+    },
+  });
+  const delivered = await prisma.orders.count({
+    where: {
+      status: "DELIVERED",
+    },
+  });
+  const processing = await prisma.orders.count({
+    where: {
+      status: "PROCESSING",
+    },
+  });
+  const shipped = await prisma.orders.count({
+    where: {
+      status: "SHIPPED",
+    },
+  });
+
   return {
     data: result,
+    meta: {
+      pending,
+      cancelled,
+      delivered,
+      processing,
+      shipped,
+    },
     pagination: {
       page,
       pages: Math.ceil(total / limit),
@@ -352,8 +421,6 @@ const updateOrderStatus = async (
     select: { id: true },
   });
 
-  console.log(isExist);
-
   return await prisma.orders.update({
     where: {
       id: isExist.id,
@@ -369,11 +436,33 @@ const updateOrderStatus = async (
   });
 };
 
+const updateCustomerOrderStatus = async (
+  id: string,
+  data: { status?: OrdersStatus },
+  user: RequestUser | undefined,
+) => {
+  const isExist = await prisma.orders.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    select: { id: true },
+  });
+
+  return await prisma.orders.update({
+    where: {
+      id: isExist.id,
+      customerId: user?.id,
+    },
+    data: { status: data.status },
+  });
+};
+
 export const OrderService = {
   createOrder,
   getAllOrders,
   updateOrderStatus,
   getAllUserOrders,
   getOrderById,
-  getAllOrdersAdmin
+  getAllOrdersAdmin,
+  updateCustomerOrderStatus,
 };

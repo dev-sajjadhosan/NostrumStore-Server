@@ -15,6 +15,17 @@ const getUser = async (user: RequestUser | undefined) => {
   });
 };
 
+const getProfile = async (user: RequestUser | undefined) => {
+  return await prisma.profile.findUniqueOrThrow({
+    where: {
+      userId: user?.id,
+    },
+    include: {
+      user: true,
+    },
+  });
+};
+
 const updateUser = async (user: RequestUser | undefined, data: any) => {
   const isExist = await prisma.user.findUniqueOrThrow({
     where: {
@@ -157,6 +168,119 @@ const deleteUser = async (id: string) => {
   });
 };
 
+const sellerMetaData = async (id: string) => {
+  const totalOrders = await prisma.orders.count({
+    where: {
+      items: {
+        some: {
+          medicine: {
+            sellerId: id,
+          },
+        },
+      },
+    },
+  });
+
+  console.log(totalOrders);
+
+  const totalMedicines = await prisma.medicines.count({
+    where: {
+      sellerId: id,
+    },
+  });
+
+  const totalRevenue = await prisma.orders.aggregate({
+    where: {
+      items: {
+        some: {
+          medicine: {
+            sellerId: id,
+          },
+        },
+      },
+    },
+    _sum: {
+      grandTotal: true,
+    },
+  });
+
+  return {
+    meta: {
+      totalOrders,
+      totalRevenue: totalRevenue?._sum?.grandTotal || 0,
+      totalMedicines,
+    },
+  };
+};
+const adminMetaData = async () => {
+  const totalSeller = await prisma.user.count({
+    where: {
+      role: "SELLER",
+    },
+  });
+  const totalCustomer = await prisma.user.count({
+    where: {
+      role: "CUSTOMER",
+    },
+  });
+
+  const totalOrders = await prisma.orders.count();
+
+  const totalMedicines = await prisma.medicines.count();
+
+  const totalRevenue = await prisma.orders.aggregate({
+    _sum: {
+      grandTotal: true,
+    },
+  });
+
+  return {
+    meta: {
+      totalOrders,
+      totalMedicines,
+      totalRevenue: totalRevenue?._sum?.grandTotal || 0,
+      totalCustomer,
+      totalSeller,
+    },
+  };
+};
+
+const updateProfile = async (id: string, payload: any) => {
+  console.log(payload);
+  return await prisma.$transaction(async (tx) => {
+    if (payload?.user) {
+      await tx.user.update({
+        where: { id },
+        data: {
+          name: payload?.user?.name,
+          email: payload?.user?.email,
+          image: payload?.user?.image,
+        },
+      });
+    }
+
+    const profileData = {
+      bio: payload.bio,
+      address: payload.address,
+      location: payload.location,
+      contact_number: payload.contact_number,
+    };
+
+    return await tx.profile.upsert({
+      where: { userId: id },
+      include: { user: true },
+      create: {
+        userId: id,
+        bio: profileData.bio || "",
+        address: profileData.address || "Not Provided",
+        location: profileData.location || "Not Provided",
+        contact_number: profileData.contact_number || "Not Provided",
+      },
+      update: profileData,
+    });
+  });
+};
+
 export const UserService = {
   getUser,
   updateUser,
@@ -164,4 +288,8 @@ export const UserService = {
   updateUserStatus,
   deleteUser,
   updateUserRole,
+  adminMetaData,
+  sellerMetaData,
+  updateProfile,
+  getProfile,
 };

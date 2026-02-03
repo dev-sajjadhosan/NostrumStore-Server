@@ -24,7 +24,7 @@ const getAllUserOrders = catchAsync(async (req: Request, res: Response) => {
   const isStatus = typeof status === "string" ? status : undefined;
   const options = paginationHelpers(req.query);
 
-  const result = await OrderService.getAllOrders({
+  const result = await OrderService.getAllUserOrders({
     user,
     options,
     search: isSearch,
@@ -96,11 +96,27 @@ const updateOrderStatus = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const body = req.body;
 
+  console.log({id, body});
+
   const result = await OrderService.updateOrderStatus(id as string, body, user);
 
   res.status(201).json({
     success: true,
     message: `Order ${result?.customerId} has been updated!`,
+    data: result,
+  });
+});
+
+const updateCustomerOrderStatus = catchAsync(async (req: Request, res: Response) => {
+  const user = req?.user;
+  const { id } = req.params;
+  const body = req.body;
+
+  const result = await OrderService.updateCustomerOrderStatus(id as string, body, user);
+
+  res.status(201).json({
+    success: true,
+    message: `Order has been updated!`,
     data: result,
   });
 });
@@ -111,5 +127,5 @@ export const OrderController = {
   updateOrderStatus,
   getAllUserOrders,
   getOrderById,
-  getAllOrdersAdmin
+  getAllOrdersAdmin,updateCustomerOrderStatus
 };

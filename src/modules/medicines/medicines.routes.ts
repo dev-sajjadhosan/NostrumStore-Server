@@ -8,7 +8,12 @@ const router = Router();
 router.get("/medicines", MedicinesController.getAllMedicines); // Public
 router.get("/medicines/:id", MedicinesController.getSingleMedicineById); // Public
 
-router.get("/seller/medicines", MedicinesController.getSellerAllMedicines);
+router.get(
+  "/seller/medicines",
+  protect,
+  restrictRole("SELLER"),
+  MedicinesController.getSellerAllMedicines,
+);
 router.post(
   "/seller/medicines",
   protect,
@@ -21,6 +26,12 @@ router.put(
   protect,
   restrictRole("SELLER"),
   MedicinesController.updateMedicine,
+);
+router.put(
+  "/seller/medicines/stock/:id",
+  protect,
+  restrictRole("SELLER"),
+  MedicinesController.updateMedicineStock,
 );
 
 router.delete(

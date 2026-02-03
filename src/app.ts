@@ -9,6 +9,7 @@ import { notFoundRoutes } from "./middleware/routeNotFound";
 import { MedicinesRoutes } from "./modules/medicines/medicines.routes";
 import { CategoriesRouter } from "./modules/categories/categories.routes";
 import { OrdersRoutes } from "./modules/orders/orders.routes";
+import { ReviewRoutes } from "./modules/review/review.routes";
 
 const app: Application = express();
 
@@ -41,6 +42,7 @@ app.use("/api", UserRoutes);
 app.use("/api", MedicinesRoutes);
 app.use("/api/categories", CategoriesRouter);
 app.use("/api", OrdersRoutes);
+app.use("/api", ReviewRoutes);
 
 app.use(errorHandler);
 app.use(notFoundRoutes);

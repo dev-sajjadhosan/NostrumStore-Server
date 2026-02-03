@@ -25,14 +25,6 @@ const getAllCategories = catchAsync(async (req: Request, res: Response) => {
     options,
   });
 
-  if (data.length <= 0) {
-    res.status(200).json({
-      success: true,
-      message: "Categories fetched successfully",
-      empty: true,
-      data: [],
-    });
-  }
   res.status(200).json({
     success: true,
     message: "Categories fetched successfully",

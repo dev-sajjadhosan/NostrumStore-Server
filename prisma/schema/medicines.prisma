@@ -12,13 +12,14 @@ model Medicines {
     categoryId String
     category   Categories @relation(fields: [categoryId], references: [id])
 
-    name        String  @db.VarChar(200) 
-    genericName String  @db.VarChar(200) 
-    strength    String? @db.VarChar(50) 
-    unitType    UnitType  @default(Pcs) 
+    name        String   @db.VarChar(200)
+    genericName String   @db.VarChar(200)
+    strength    String?  @db.VarChar(50)
+    unitType    UnitType @default(Pcs)
 
     group       String? @db.VarChar(255)
     description String  @db.Text
+    overview    String  @db.Text
 
     price         Decimal  @db.Decimal(10, 2)
     discountPrice Decimal? @db.Decimal(10, 2)
@@ -27,7 +28,6 @@ model Medicines {
     image String
     tags  String[]
 
-   
     isPrescriptionRequired Boolean   @default(false)
     expiryDate             DateTime?
     sku                    String?   @db.VarChar(100)
