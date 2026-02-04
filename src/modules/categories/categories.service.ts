@@ -73,22 +73,16 @@ const getSingleCategoriesById = async (id: string | undefined) => {
   });
 };
 
-const updateCategoryStatus = async (id: string, data: any) => {
+const updateCategory = async (id: string, data: any) => {
   const isExist = await prisma.categories.findFirstOrThrow({
     where: { id },
     select: { id: true, status: true },
   });
 
-  if (data?.status === isExist.status) {
-    return "Status already exist.";
-  }
-
   if (data.status) {
     return prisma.categories.update({
       where: { id: isExist.id },
-      data: {
-        status: data?.status,
-      },
+      data,
     });
   }
   return "Action can't perform.";
@@ -109,6 +103,6 @@ export const CategoriesService = {
   createCategories,
   getAllCategories,
   getSingleCategoriesById,
-  updateCategoryStatus,
+   updateCategory,
   deleteCategories,
 };

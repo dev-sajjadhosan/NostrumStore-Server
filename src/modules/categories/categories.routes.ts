@@ -18,7 +18,7 @@ router.put(
   "/:id",
     protect,
     restrictRole("ADMIN"),
-  CategoriesController.updateCategoryStatus,
+  CategoriesController.updateCategory,
 );
 
 router.delete(

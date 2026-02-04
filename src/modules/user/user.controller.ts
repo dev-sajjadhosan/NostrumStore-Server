@@ -38,6 +38,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const { search, status, role } = req.query;
   const options = paginationHelpers(req.params);
 
+  console.log(status);
+
   const isSearch = typeof search === "string" ? search : undefined;
   const isStatus = typeof status === "string" ? status : undefined;
   const isRole = typeof status === "string" ? role : undefined;

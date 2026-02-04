@@ -18,5 +18,18 @@ router.get(
   restrictRole("CUSTOMER"),
   ReviewController.getAllReviewByMedicineId,
 );
+router.post(
+  "/review/order",
+  protect,
+  restrictRole("CUSTOMER"),
+  ReviewController.createOrderReview,
+);
+
+router.get(
+  "/review/order/:id",
+  protect,
+  restrictRole("CUSTOMER"),
+  ReviewController.getAllOrderReviewByMedicineId,
+);
 
 export const ReviewRoutes = router;

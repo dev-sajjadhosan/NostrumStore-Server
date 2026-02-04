@@ -10,21 +10,22 @@ enum Status {
 }
 
 model User {
-    id            String      @id
+    id            String        @id
     name          String
     email         String
-    emailVerified Boolean     @default(false)
+    emailVerified Boolean       @default(false)
     image         String?
-    createdAt     DateTime    @default(now())
-    updatedAt     DateTime    @updatedAt
-    role          Role        @default(CUSTOMER)
-    status        Status      @default(UNBAN)
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    role          Role          @default(CUSTOMER)
+    status        Status        @default(UNBAN)
     sessions      Session[]
     accounts      Account[]
     profile       Profile?
     medicines     Medicines[]
     orders        Orders[]
     reviews       Reviews[]
+    orderReviews  OrderReview[]
 
     @@unique([email])
     @@map("user")

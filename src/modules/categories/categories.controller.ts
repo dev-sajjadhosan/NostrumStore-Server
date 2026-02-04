@@ -48,11 +48,11 @@ const getSingleCategoriesById = catchAsync(
   },
 );
 
-const updateCategoryStatus = catchAsync(async (req: Request, res: Response) => {
+const updateCategory = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const data = req.body;
 
-  const result = await CategoriesService.updateCategoryStatus(
+  const result = await CategoriesService.updateCategory(
     id as string,
     data,
   );
@@ -79,6 +79,6 @@ export const CategoriesController = {
   createCategories,
   getAllCategories,
   getSingleCategoriesById,
-  updateCategoryStatus,
+  updateCategory,
   deleteCategories,
 };

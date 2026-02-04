@@ -16,10 +16,11 @@ const app: Application = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: config.app_url || "http://localhost:3000",
+    origin: ["http://localhost:3000", config.app_url as string],
     credentials: true,
   }),
 );
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
@@ -36,7 +37,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/api", UserRoutes);
 app.use("/api", MedicinesRoutes);

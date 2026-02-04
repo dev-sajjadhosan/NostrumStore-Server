@@ -49,7 +49,7 @@ router.get(
 router.patch(
   "/seller/orders/:id",
   protect,
-  restrictRole("SELLER"),
+  restrictRole("SELLER", "ADMIN"),
   OrderController.updateOrderStatus,
 );
 

@@ -24,8 +24,9 @@ model Orders {
 
     items OrderItem[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    orderReview OrderReview?
 }
 
 model OrderItem {

@@ -11,3 +11,22 @@ model Reviews {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
+
+model OrderReview {
+    id String @id @default(uuid())
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    orderId String @unique
+    order   Orders @relation(fields: [orderId], references: [id])
+
+    rating  Int     @default(5)
+    comment String? @db.Text
+
+    deliveryRating       Int?
+    productQualityRating Int?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

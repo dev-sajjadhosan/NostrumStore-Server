@@ -16,14 +16,34 @@ const getUser = async (user: RequestUser | undefined) => {
 };
 
 const getProfile = async (user: RequestUser | undefined) => {
-  return await prisma.profile.findUniqueOrThrow({
+  if (!user?.id) return null;
+
+  const profile = await prisma.profile.findUnique({
     where: {
-      userId: user?.id,
+      userId: user.id,
     },
     include: {
       user: true,
     },
   });
+
+  if (profile) {
+    return profile;
+  }
+
+  const userData = await prisma.user.findUnique({
+    where: {
+      id: user?.id,
+    },
+  });
+
+  return {
+    ...userData,
+
+    bio: null,
+    address: null,
+    user: user,
+  };
 };
 
 const updateUser = async (user: RequestUser | undefined, data: any) => {
@@ -59,49 +79,40 @@ const getAllUsers = async ({
   options: PgOptionsRs;
   search: string | undefined;
   user: any;
-
   role: string | undefined;
   status: string | undefined;
 }) => {
   const { page, limit, skip, sortBy, sortOrder } = options;
   const conditions: UserWhereInput[] = [];
 
+
   if (search) {
     conditions.push({
       OR: [
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          email: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
+        { name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
       ],
     });
   }
 
-  if (role) {
+  if (role) conditions.push({ role: role as any });
+  if (status)
     conditions.push({
-      role: role as Role,
+      orders: {
+        every: {
+          status: status as any,
+        },
+      },
     });
-  }
-
-  if (status) {
-    conditions.push({
-      status: status as Status,
-    });
-  }
 
   const result = await prisma.user.findMany({
     take: limit,
     skip,
     where: {
       AND: conditions,
+    },
+    include: {
+      orders: true,
     },
     orderBy: {
       [sortBy]: sortOrder,
@@ -114,13 +125,28 @@ const getAllUsers = async ({
     },
   });
 
+  const processedData = result
+    .filter((r) => r.id !== user?.id)
+    .map((u) => {
+      const totalSpent = u.orders.reduce((sum, order) => {
+        return sum + (Number(order?.grandTotal) || 0);
+      }, 0);
+
+      const { orders, ...userWithoutOrders } = u;
+
+      return {
+        ...userWithoutOrders,
+        totalSpent,
+      };
+    });
+
   return {
-    data: result.filter((r) => r.id !== user?.id),
+    data: processedData,
     pagination: {
       page,
       pages: Math.ceil(total / limit),
       limit,
-      total,
+      total: total > 0 ? total - 1 : 0,
     },
   };
 };
@@ -223,14 +249,37 @@ const adminMetaData = async () => {
       role: "CUSTOMER",
     },
   });
-
   const totalOrders = await prisma.orders.count();
-
   const totalMedicines = await prisma.medicines.count();
-
   const totalRevenue = await prisma.orders.aggregate({
     _sum: {
       grandTotal: true,
+    },
+  });
+
+  const deliversOrder = await prisma.orders.count({
+    where: {
+      status: "DELIVERED",
+    },
+  });
+  const cancelledOrder = await prisma.orders.count({
+    where: {
+      status: "CANCELLED",
+    },
+  });
+  const pendingOrder = await prisma.orders.count({
+    where: {
+      status: "PENDING",
+    },
+  });
+  const processingOrder = await prisma.orders.count({
+    where: {
+      status: "PROCESSING",
+    },
+  });
+  const shippedOrder = await prisma.orders.count({
+    where: {
+      status: "SHIPPED",
     },
   });
 
@@ -241,6 +290,13 @@ const adminMetaData = async () => {
       totalRevenue: totalRevenue?._sum?.grandTotal || 0,
       totalCustomer,
       totalSeller,
+    },
+    orders: {
+      deliversOrder,
+      cancelledOrder,
+      pendingOrder,
+      processingOrder,
+      shippedOrder,
     },
   };
 };
