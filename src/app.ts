@@ -13,10 +13,16 @@ import { ReviewRoutes } from "./modules/review/review.routes";
 
 const app: Application = express();
 
+
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000", config.app_url as string],
+    origin: [
+      "http://localhost:3000",
+      "https://nostrum-store.vercel.app",
+      "https://nostrum-store-server.vercel.app",
+      config.app_url as string,
+    ],
     credentials: true,
   }),
 );
@@ -36,7 +42,6 @@ app.get("/", (req: Request, res: Response) => {
     },
   });
 });
-
 
 app.use("/api", UserRoutes);
 app.use("/api", MedicinesRoutes);

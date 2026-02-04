@@ -31,7 +31,7 @@ const getAllOrderReviewByMedicineId = catchAsync(
 
     res.status(200).json({
       success: true,
-      message: "Review fetched successfully!",
+      message: "Order Review fetched successfully!",
       data: result,
     });
   },
@@ -45,7 +45,7 @@ const createOrderReview = catchAsync(async (req: Request, res: Response) => {
 
   res.status(201).json({
     success: true,
-    message: "Review placed successfully!",
+    message: "Order Review placed successfully!",
     data: result,
   });
 });

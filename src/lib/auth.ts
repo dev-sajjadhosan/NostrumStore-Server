@@ -8,20 +8,15 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
   advanced: {
-    useSecureCookies: process.env.NODE_ENV === "production",
-    cookiePrefix: "better-auth",
-    crossSubDomainCookies: {
-      enabled: false,
-    },
-    sameSite: "none",
+    useSecureCookies: true,
+    sameSite: "lax",
+    disableOriginCheck: true,
   },
   trustedOrigins: [
     "http://localhost:3000",
-    config.app_url as string,
     "https://nostrum-store.vercel.app",
+    "https://nostrum-store-server.vercel.app",
   ],
   user: {
     additionalFields: {
