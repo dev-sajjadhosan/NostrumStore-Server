@@ -10,21 +10,21 @@ router.get("/:id", CategoriesController.getSingleCategoriesById); // Public
 router.post(
   "/",
     protect,
-    restrictRole("ADMIN"),
+    restrictRole("ADMIN", "SUPER_ADMIN"),
   CategoriesController.createCategories,
 ); // Admin
 
 router.put(
   "/:id",
     protect,
-    restrictRole("ADMIN"),
+    restrictRole("ADMIN", "SUPER_ADMIN"),
   CategoriesController.updateCategory,
 );
 
 router.delete(
   "/:id",
   protect,
-  restrictRole("ADMIN"),
+  restrictRole("ADMIN", "SUPER_ADMIN"),
   CategoriesController.deleteCategories,
 );
 export const CategoriesRouter = router;

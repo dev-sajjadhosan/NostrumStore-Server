@@ -17,4 +17,14 @@ export const config = {
   discord_client_secret: process.env.DISCORD_CLIENT_SEC,
   app_user: process.env.APP_USER,
   app_pass: process.env.APP_PASS,
+
+  smtp_host: process.env.SMTP_HOST,
+  smtp_port: process.env.SMTP_PORT,
+  smtp_from: process.env.SMTP_FROM,
+
+  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
+  REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN,
+  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
+  ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN,
+
 };

@@ -42,14 +42,14 @@ router.get(
 router.get(
   "/admin/orders",
   protect,
-  restrictRole("ADMIN"),
+  restrictRole("ADMIN", "SUPER_ADMIN", "MANAGER"),
   OrderController.getAllOrdersAdmin,
 );
 
 router.patch(
   "/seller/orders/:id",
   protect,
-  restrictRole("SELLER", "ADMIN"),
+  restrictRole("SELLER", "ADMIN", "SUPER_ADMIN", "MANAGER"),
   OrderController.updateOrderStatus,
 );
 

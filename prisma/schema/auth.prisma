@@ -2,30 +2,38 @@ enum Role {
     CUSTOMER
     SELLER
     ADMIN
+    SUPER_ADMIN
+    MANAGER
 }
 
 enum Status {
     BAN
     UNBAN
+    DELETED
 }
 
 model User {
-    id            String        @id
+    id            String   @id
     name          String
     email         String
-    emailVerified Boolean       @default(false)
+    emailVerified Boolean  @default(false)
     image         String?
-    createdAt     DateTime      @default(now())
-    updatedAt     DateTime      @updatedAt
-    role          Role          @default(CUSTOMER)
-    status        Status        @default(UNBAN)
-    sessions      Session[]
-    accounts      Account[]
-    profile       Profile?
-    medicines     Medicines[]
-    orders        Orders[]
-    reviews       Reviews[]
-    orderReviews  OrderReview[]
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    role          Role     @default(CUSTOMER)
+    status        Status   @default(UNBAN)
+
+    needPasswordChange Boolean   @default(false)
+    isDeleted          Boolean   @default(false)
+    deletedAt          DateTime?
+
+    sessions     Session[]
+    accounts     Account[]
+    profile      Profile?
+    medicines    Medicines[]
+    orders       Orders[]
+    reviews      Reviews[]
+    orderReviews OrderReview[]
 
     @@unique([email])
     @@map("user")

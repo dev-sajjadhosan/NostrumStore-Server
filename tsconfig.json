@@ -1,18 +1,23 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "bundler",
-    "target": "ES2023",
+    "target": "es2023",
+    "rootDir": "./",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    // "ignoreDeprecations": "6.0"
   },
   "include": [
-    "src/**/*"
-  ],
+    "src",
+    "prisma.config.ts",
+    "src/app/interfaces/index.d.ts"
+, "DoctorSchedule"  ],
   "exclude": [
     "node_modules",
-    "dist",
-    "generated/prisma"
+    "dist"
   ]
 }
