@@ -7,7 +7,13 @@ const router = Router();
 
 router.get("/profile/me", protect, UserController.getUser);
 router.patch("/profile/me", protect, UserController.updateUser);
-router.patch("/profile/role/:id", protect, restrictRole("ADMIN", "SUPER_ADMIN"), UserController.updateUserRole);
+
+router.patch(
+  "/profile/role/:id",
+  protect,
+  restrictRole("SUPER_ADMIN", "CUSTOMER", "ADMIN", "SELLER"),
+  UserController.updateUserRole,
+);
 
 router.get("/profile", protect, UserController.getProfile);
 router.patch(

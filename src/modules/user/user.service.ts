@@ -1,8 +1,16 @@
-import { Role, Status } from "../../../generated/prisma/enums";
+import { Prisma, User } from "../../../generated/prisma/client";
 import { UserWhereInput } from "../../../generated/prisma/models";
+import { Role } from "../../../generated/prisma/enums";
 import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilders";
+import {
+  userSearchableFields,
+  userFilterableFields,
+  userIncludeConfig,
+} from "../../config/query.config";
+import { IQueryParams, IQueryResult } from "../../interface/query.interface";
 
 const getUser = async (user: RequestUser | undefined) => {
   return await prisma.user.findUniqueOrThrow({
@@ -69,86 +77,30 @@ const updateUser = async (user: RequestUser | undefined, data: any) => {
   });
 };
 
-const getAllUsers = async ({
-  options,
-  search,
-  user,
-  role,
-  status,
-}: {
-  options: PgOptionsRs;
-  search: string | undefined;
-  user: any;
-  role: string | undefined;
-  status: string | undefined;
-}) => {
-  const { page, limit, skip, sortBy, sortOrder } = options;
-  const conditions: UserWhereInput[] = [];
-
-
-  if (search) {
-    conditions.push({
-      OR: [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-      ],
-    });
-  }
-
-  if (role) conditions.push({ role: role as any });
-  if (status)
-    conditions.push({
-      orders: {
-        every: {
-          status: status as any,
-        },
-      },
-    });
-
-  const result = await prisma.user.findMany({
-    take: limit,
-    skip,
-    where: {
-      AND: conditions,
-    },
-    include: {
-      orders: true,
-    },
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+const getAllUsers = async (
+  query: IQueryParams,
+  currentUserId: string,
+): Promise<IQueryResult<User>> => {
+  const queryBuilder = new QueryBuilder<
+    User,
+    Prisma.UserWhereInput,
+    Prisma.UserInclude
+  >(prisma.user, query, {
+    searchableFields: userSearchableFields,
+    filterableFields: userFilterableFields,
   });
 
-  const total = await prisma.user.count({
-    where: {
-      AND: conditions,
-    },
-  });
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({ NOT: { id: currentUserId } })
+    .dynamicInclude(userIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  const processedData = result
-    .filter((r) => r.id !== user?.id)
-    .map((u) => {
-      const totalSpent = u.orders.reduce((sum, order) => {
-        return sum + (Number(order?.grandTotal) || 0);
-      }, 0);
-
-      const { orders, ...userWithoutOrders } = u;
-
-      return {
-        ...userWithoutOrders,
-        totalSpent,
-      };
-    });
-
-  return {
-    data: processedData,
-    pagination: {
-      page,
-      pages: Math.ceil(total / limit),
-      limit,
-      total: total > 0 ? total - 1 : 0,
-    },
-  };
+  return result;
 };
 
 const updateUserStatus = async (id: string | undefined, data: any) => {
@@ -249,6 +201,11 @@ const adminMetaData = async () => {
       role: "CUSTOMER",
     },
   });
+  const totalManager = await prisma.user.count({
+    where: {
+      role: "MANAGER",
+    },
+  });
   const totalOrders = await prisma.orders.count();
   const totalMedicines = await prisma.medicines.count();
   const totalRevenue = await prisma.orders.aggregate({
@@ -290,6 +247,7 @@ const adminMetaData = async () => {
       totalRevenue: totalRevenue?._sum?.grandTotal || 0,
       totalCustomer,
       totalSeller,
+      totalManager,
     },
     orders: {
       deliversOrder,

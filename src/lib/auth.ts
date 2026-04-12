@@ -13,11 +13,6 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  advanced: {
-    useSecureCookies: true,
-    sameSite: "lax",
-    disableOriginCheck: true,
-  },
   trustedOrigins: [
     "http://localhost:3000",
     "https://nostrum-store.vercel.app",
@@ -91,9 +86,13 @@ export const auth = betterAuth({
             return;
           }
 
-          if (user && user.role === Role.SUPER_ADMIN) {
+          if (
+            (user && user.role === Role.SUPER_ADMIN) ||
+            user.role === Role.ADMIN ||
+            user.role === Role.MANAGER
+          ) {
             console.error(
-              `User with email ${email} is a Super Admin. Skipping sending verification OTP.`,
+              `User with email ${email} is a ${user?.role}. Skipping sending verification OTP.`,
             );
             return;
           }

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { auth } from "../lib/auth";
 import { Role } from "../../generated/prisma/enums";
+import { prisma } from "../lib/prisma";
 
 export const protect = async (
   req: Request,
@@ -8,9 +9,22 @@ export const protect = async (
   next: NextFunction,
 ) => {
   try {
-    let session = await auth.api.getSession({
-      headers: req.headers as any,
-    });
+    let session;
+    const { id } = req.params;
+    const { session: isSession } = req.query;
+    if (id && isSession === "false") {
+      session = await prisma.session.findFirst({
+        where: {
+          userId: id as string,
+        },
+        select: {
+          user: true,
+        },
+      });
+    } else
+      session = await auth.api.getSession({
+        headers: req.headers as any,
+      });
 
     if (!session) {
       return res

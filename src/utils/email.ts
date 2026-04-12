@@ -7,7 +7,7 @@ import { config } from "../config";
 const transporter = nodemailer.createTransport({
   host: config.smtp_host,
   port: Number(config.smtp_port),
-  secure: true,
+  secure: false,
   auth: {
     user: config.app_user,
     pass: config.app_pass,
@@ -37,7 +37,7 @@ export const sendEmail = async ({
   try {
     const templatePath = path.resolve(
       process.cwd(),
-      `src/app/templates/${templateName}.ejs`,
+      `src/templates/${templateName}.ejs`,
     );
     // console.log({ templatePath })
     // console.log({ templateData })
@@ -54,9 +54,9 @@ export const sendEmail = async ({
         contentType: attachment.contentType,
       })),
     });
-    // console.log(`Email sent to ${to} with message ID ${info.messageId}`);
+    console.log(`Email sent to ${to} with message ID ${info.messageId}`);
   } catch (error) {
-    // console.log("Error sending email", error);
+    console.log("Error sending email", error);
     throw new Error("Failed to send email");
   }
 };

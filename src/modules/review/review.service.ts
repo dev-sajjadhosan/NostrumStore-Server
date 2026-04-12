@@ -1,7 +1,18 @@
+import { Prisma, Reviews, OrderReview } from "../../../generated/prisma/client";
 import { ReviewsWhereInput } from "../../../generated/prisma/models";
 import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilders";
+import {
+  reviewsSearchableFields,
+  reviewsFilterableFields,
+  reviewsIncludeConfig,
+  orderReviewSearchableFields,
+  orderReviewFilterableFields,
+  orderReviewIncludeConfig,
+} from "../../config/query.config";
+import { IQueryParams, IQueryResult } from "../../interface/query.interface";
 
 const createOrderReview = async ({
   user,
@@ -18,38 +29,30 @@ const createOrderReview = async ({
   });
 };
 
-const getAllOrderReviewByMedicineId = async ({
-  user,
-  options,
-  id,
-}: {
-  user: RequestUser | undefined;
-  options: PgOptionsRs;
-  id: string;
-}) => {
-  const { page, skip, limit, sortBy, sortOrder } = options;
-
-  const result = await prisma.orderReview.findMany({
-    skip,
-    take: limit,
-    include: { user: true },
-
-    orderBy: { [sortBy]: sortOrder },
+const getAllOrderReviewByMedicineId = async (
+  query: IQueryParams,
+  id: string,
+): Promise<IQueryResult<OrderReview>> => {
+  const queryBuilder = new QueryBuilder<
+    OrderReview,
+    Prisma.OrderReviewWhereInput,
+    Prisma.OrderReviewInclude
+  >(prisma.orderReview, query, {
+    searchableFields: orderReviewSearchableFields,
+    filterableFields: orderReviewFilterableFields,
   });
 
-  const total = await prisma.reviews.count({
-    where: { medicineId: id },
-  });
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({ orderId: id })
+    .dynamicInclude(orderReviewIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  return {
-    data: result,
-    pagination: {
-      page,
-      pages: Math.ceil(total / limit),
-      limit,
-      total,
-    },
-  };
+  return result;
 };
 const createReview = async ({
   user,
@@ -66,41 +69,31 @@ const createReview = async ({
   });
 };
 
-const getAllReviewByMedicineId = async ({
-  user,
-  options,
-  id,
-}: {
-  user: RequestUser | undefined;
-  options: PgOptionsRs;
-  id: string;
-}) => {
-  const { page, skip, limit, sortBy, sortOrder } = options;
-
-  const result = await prisma.reviews.findMany({
-    skip,
-    take: limit,
-    where: { medicineId: id },
-    include: { user: true },
-
-    orderBy: { [sortBy]: sortOrder },
+const getAllReviewByMedicineId = async (
+  query: IQueryParams,
+  id: string,
+): Promise<IQueryResult<Reviews>> => {
+  const queryBuilder = new QueryBuilder<
+    Reviews,
+    Prisma.ReviewsWhereInput,
+    Prisma.ReviewsInclude
+  >(prisma.reviews, query, {
+    searchableFields: reviewsSearchableFields,
+    filterableFields: reviewsFilterableFields,
   });
 
-  const total = await prisma.reviews.count({
-    where: { medicineId: id },
-  });
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({ medicineId: id })
+    .dynamicInclude(reviewsIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  return {
-    data: result,
-    pagination: {
-      page,
-      pages: Math.ceil(total / limit),
-      limit,
-      total,
-    },
-  };
+  return result;
 };
-
 export const ReviewService = {
   createReview,
   getAllReviewByMedicineId,

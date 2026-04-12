@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { CategoriesService } from "./categories.service";
-import { paginationHelpers } from "../../helpers/paginationHelpers";
+import { IQueryParams } from "../../interface/query.interface";
 
 const createCategories = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
@@ -16,19 +16,22 @@ const createCategories = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllCategories = catchAsync(async (req: Request, res: Response) => {
-  const { search } = req.query;
-  const isSearch = typeof search === "string" ? search : undefined;
-  const options = paginationHelpers(req.query);
+  const query: IQueryParams = {
+    searchTerm: req.query.searchTerm as string,
+    page: req.query.page as string,
+    limit: req.query.limit as string,
+    sortBy: req.query.sortBy as string,
+    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+    fields: req.query.fields as string,
+    includes: req.query.includes as string,
+  };
 
-  const { data, pagination } = await CategoriesService.getAllCategories({
-    search: isSearch as string,
-    options,
-  });
+  const { data, meta } = await CategoriesService.getAllCategories(query);
 
   res.status(200).json({
     success: true,
     message: "Categories fetched successfully",
-    data: { data, pagination },
+    data: { data, meta },
   });
 });
 

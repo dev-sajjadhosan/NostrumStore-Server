@@ -18,35 +18,6 @@ const findMyAccount = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getNewToken = catchAsync(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
-  const betterAuthSessionToken = req.cookies["better-auth.session_token"];
-  if (!refreshToken) {
-    throw new Error("Refresh token is missing");
-  }
-  const result = await AuthService.getNewToken(
-    refreshToken,
-    betterAuthSessionToken,
-  );
-
-  const { accessToken, refreshToken: newRefreshToken, sessionToken } = result;
-
-  tokenUtils.setAccessTokenCookie(res, accessToken);
-  tokenUtils.setRefreshTokenCookie(res, newRefreshToken);
-  tokenUtils.setBetterAuthSessionCookie(res, sessionToken);
-
-  sendResponse(res, {
-    httpStatusCode: status.OK,
-    success: true,
-    message: "New tokens generated successfully",
-    data: {
-      accessToken,
-      refreshToken: newRefreshToken,
-      sessionToken,
-    },
-  });
-});
-
 const changePassword = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
   const betterAuthSessionToken = req.cookies["better-auth.session_token"];
@@ -56,10 +27,8 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
     betterAuthSessionToken,
   );
 
-  const { accessToken, refreshToken, token } = result;
+  const { token } = result;
 
-  tokenUtils.setAccessTokenCookie(res, accessToken);
-  tokenUtils.setRefreshTokenCookie(res, refreshToken);
   tokenUtils.setBetterAuthSessionCookie(res, token as string);
 
   sendResponse(res, {
@@ -73,16 +42,6 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
 const logoutUser = catchAsync(async (req: Request, res: Response) => {
   const betterAuthSessionToken = req.cookies["better-auth.session_token"];
   const result = await AuthService.logoutUser(betterAuthSessionToken);
-  CookieUtils.clearCookie(res, "accessToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
-  CookieUtils.clearCookie(res, "refreshToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
   CookieUtils.clearCookie(res, "better-auth.session_token", {
     httpOnly: true,
     secure: true,
@@ -99,11 +58,12 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
 
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   const { email, otp } = req.body;
-  await AuthService.verifyEmail(email, otp);
+  const result = await AuthService.verifyEmail(email, otp);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
+    data: result,
     message: "Email verified successfully",
   });
 });
@@ -145,7 +105,18 @@ const googleLogin = catchAsync((req: Request, res: Response) => {
     betterAuthUrl: config.better_url,
   });
 });
+const sendVerifyOtp = catchAsync(async (req: Request, res: Response) => {
+  const { email, type } = req.body;
 
+  const result = await AuthService.sendVerifyOtp(email, type);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Verify otp sent successfully",
+    data: result,
+  });
+});
 export const AuthController = {
   findMyAccount,
   resetPassword,
@@ -153,5 +124,5 @@ export const AuthController = {
   changePassword,
   logoutUser,
   verifyEmail,
-  getNewToken,
+  sendVerifyOtp
 };

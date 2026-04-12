@@ -1,8 +1,16 @@
-import { OrdersStatus } from "../../../generated/prisma/enums";
+import { Prisma, Orders } from "../../../generated/prisma/client";
 import { OrdersWhereInput } from "../../../generated/prisma/models";
+import { OrdersStatus } from "../../../generated/prisma/enums";
 import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilders";
+import {
+  ordersSearchableFields,
+  ordersFilterableFields,
+  ordersIncludeConfig,
+} from "../../config/query.config";
+import { IQueryParams, IQueryResult } from "../../interface/query.interface";
 
 const createOrder = async ({
   user,
@@ -64,119 +72,31 @@ const createOrder = async ({
   });
 };
 
-const getAllUserOrders = async ({
-  user,
-  options,
-  search,
-  status,
-}: {
-  user: RequestUser | undefined;
-  options: PgOptionsRs;
-  search: string | undefined;
-  status: string | undefined;
-}) => {
-  const { page, skip, limit, sortBy, sortOrder } = options;
-  const conditions: OrdersWhereInput[] = [];
-
-  conditions.push({
-    customerId: user?.id,
+const getAllUserOrders = async (
+  query: IQueryParams,
+  userId: string,
+): Promise<IQueryResult<Orders>> => {
+  const queryBuilder = new QueryBuilder<
+    Orders,
+    Prisma.OrdersWhereInput,
+    Prisma.OrdersInclude
+  >(prisma.orders, query, {
+    searchableFields: ordersSearchableFields,
+    filterableFields: ordersFilterableFields,
   });
 
-  if (search) {
-    conditions.push({
-      OR: [
-        { customer: { name: { contains: search, mode: "insensitive" } } },
-        { address: { contains: search, mode: "insensitive" } },
-        {
-          items: {
-            some: {
-              medicine: { name: { contains: search, mode: "insensitive" } },
-            },
-          },
-        },
-      ],
-    });
-  }
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({ customerId: userId })
+    .dynamicInclude(ordersIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  if (status) {
-    conditions.push({
-      status: status as OrdersStatus,
-    });
-  }
-
-  const result = await prisma.orders.findMany({
-    skip,
-    take: limit,
-    where: { AND: conditions },
-    include: {
-      customer: true,
-      items: {
-        where: {
-          AND: [
-            search
-              ? {
-                  medicine: { name: { contains: search, mode: "insensitive" } },
-                }
-              : {},
-          ],
-        },
-        include: {
-          medicine: true,
-        },
-      },
-    },
-    orderBy: { [sortBy]: sortOrder },
-  });
-
-  const total = await prisma.orders.count({
-    where: { AND: conditions },
-  });
-
-  const pending = await prisma.orders.count({
-    where: {
-      status: "PENDING",
-    },
-  });
-  const cancelled = await prisma.orders.count({
-    where: {
-      status: "CANCELLED",
-    },
-  });
-  const delivered = await prisma.orders.count({
-    where: {
-      status: "DELIVERED",
-    },
-  });
-  const processing = await prisma.orders.count({
-    where: {
-      status: "PROCESSING",
-    },
-  });
-  const shipped = await prisma.orders.count({
-    where: {
-      status: "SHIPPED",
-    },
-  });
-
-  return {
-    data: result,
-    meta: {
-      pending,
-      cancelled,
-      delivered,
-      processing,
-      shipped,
-      total,
-    },
-    pagination: {
-      page,
-      pages: Math.ceil(total / limit),
-      limit,
-      total,
-    },
-  };
+  return result;
 };
-
 const getOrderById = async (
   user: RequestUser | undefined,
   id: string | undefined,
@@ -199,126 +119,37 @@ const getOrderById = async (
 
 // ---------------------------------------------------//
 
-const getAllOrders = async ({
-  user,
-  options,
-  search,
-  status,
-}: {
-  user: RequestUser | undefined;
-  options: PgOptionsRs;
-  search: string | undefined;
-  status: string | undefined;
-}) => {
-  const { page, skip, limit, sortBy, sortOrder } = options;
-  const conditions: OrdersWhereInput[] = [];
+const getAllOrders = async (
+  query: IQueryParams,
+  userId: string,
+): Promise<IQueryResult<Orders>> => {
+  const queryBuilder = new QueryBuilder<
+    Orders,
+    Prisma.OrdersWhereInput,
+    Prisma.OrdersInclude
+  >(prisma.orders, query, {
+    searchableFields: ordersSearchableFields,
+    filterableFields: ordersFilterableFields,
+  });
 
-  const sellerCondition = {
-    items: {
-      some: {
-        medicine: { sellerId: user?.id },
-      },
-    },
-  };
-  conditions.push(sellerCondition);
-
-  if (search) {
-    conditions.push({
-      OR: [
-        { customer: { name: { contains: search, mode: "insensitive" } } },
-        { address: { contains: search, mode: "insensitive" } },
-        {
-          items: {
-            some: {
-              medicine: { name: { contains: search, mode: "insensitive" } },
-            },
-          },
-        },
-      ],
-    });
-  }
-
-  if (status) {
-    conditions.push({
-      status: status as OrdersStatus,
-    });
-  }
-
-  const result = await prisma.orders.findMany({
-    skip,
-    take: limit,
-    where: { AND: conditions },
-    include: {
-      customer: true,
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({
       items: {
-        where: {
-          AND: [
-            { medicine: { sellerId: user?.id } },
-
-            search
-              ? {
-                  medicine: { name: { contains: search, mode: "insensitive" } },
-                }
-              : {},
-          ],
-        },
-        include: {
-          medicine: true,
+        some: {
+          medicine: { sellerId: userId },
         },
       },
-    },
+    })
+    .dynamicInclude(ordersIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-    orderBy: { [sortBy]: sortOrder },
-  });
-
-  const total = await prisma.orders.count({
-    where: { AND: conditions },
-  });
-
-  const pending = await prisma.orders.count({
-    where: {
-      status: "PENDING",
-    },
-  });
-  const cancelled = await prisma.orders.count({
-    where: {
-      status: "CANCELLED",
-    },
-  });
-  const delivered = await prisma.orders.count({
-    where: {
-      status: "DELIVERED",
-    },
-  });
-  const processing = await prisma.orders.count({
-    where: {
-      status: "PROCESSING",
-    },
-  });
-  const shipped = await prisma.orders.count({
-    where: {
-      status: "SHIPPED",
-    },
-  });
-
-  return {
-    data: result,
-    meta: {
-      pending,
-      cancelled,
-      delivered,
-      processing,
-      shipped,
-    },
-    pagination: {
-      page,
-      pages: Math.ceil(total / limit),
-      limit,
-      total,
-    },
-  };
+  return result;
 };
-
 const getAllOrdersAdmin = async ({
   options,
   search,

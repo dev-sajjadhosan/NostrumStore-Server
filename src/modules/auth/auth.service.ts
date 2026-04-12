@@ -18,69 +18,6 @@ const findMyAccount = async (email: string) => {
   return existingUser;
 };
 
-const getNewToken = async (refreshToken: string, sessionToken: string) => {
-  const isSessionTokenExists = await prisma.session.findUnique({
-    where: {
-      token: sessionToken,
-    },
-    include: {
-      user: true,
-    },
-  });
-
-  if (!isSessionTokenExists) {
-    throw new Error("Invalid session token");
-  }
-
-  const verifiedRefreshToken = jwtUtils.verifyToken(
-    refreshToken,
-    config.REFRESH_TOKEN_SECRET as string,
-  );
-
-  if (!verifiedRefreshToken.success && verifiedRefreshToken.err) {
-    throw new Error("Invalid refresh token");
-  }
-
-  const data = verifiedRefreshToken.data as JwtPayload;
-
-  const newAccessToken = tokenUtils.getAccessToken({
-    userId: data.userId,
-    role: data.role,
-    name: data.name,
-    email: data.email,
-    status: data.status,
-    isDeleted: data.isDeleted,
-    emailVerified: data.emailVerified,
-  });
-
-  const newRefreshToken = tokenUtils.getRefreshToken({
-    userId: data.userId,
-    role: data.role,
-    name: data.name,
-    email: data.email,
-    status: data.status,
-    isDeleted: data.isDeleted,
-    emailVerified: data.emailVerified,
-  });
-
-  const { token } = await prisma.session.update({
-    where: {
-      token: sessionToken,
-    },
-    data: {
-      token: sessionToken,
-      expiresAt: new Date(Date.now() + 60 * 60 * 60 * 24 * 1000),
-      updatedAt: new Date(),
-    },
-  });
-
-  return {
-    accessToken: newAccessToken,
-    refreshToken: newRefreshToken,
-    sessionToken: token,
-  };
-};
-
 const changePassword = async (
   payload: IChangePasswordPayload,
   sessionToken: string,
@@ -215,7 +152,7 @@ const resetPassword = async (
   });
 
   if (!isUserExist) {
-    throw new Error( "User not found");
+    throw new Error("User not found");
   }
 
   if (!isUserExist.emailVerified) {
@@ -252,13 +189,42 @@ const resetPassword = async (
   });
 };
 
+const sendVerifyOtp = async (
+  email: string,
+  type: "sign-in" | "email-verification" | "forget-password",
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.emailVerified) {
+    throw new Error("User already verified");
+  }
+
+  if (user.isDeleted || user.status === Status.DELETED) {
+    throw new Error("User not found.");
+  }
+
+  await auth.api.sendVerificationOTP({
+    body: {
+      email,
+      type,
+    },
+  });
+};
+
 export const AuthService = {
   findMyAccount,
   resetPassword,
   forgetPassword,
   changePassword,
-    logoutUser,
-    verifyEmail,
-    getNewToken
-    
+  logoutUser,
+  verifyEmail,
+  sendVerifyOtp
 };

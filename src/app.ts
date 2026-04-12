@@ -15,15 +15,13 @@ import { AuthRoutes } from "./modules/auth/auth.routes";
 import path from "path";
 import { seedAdmin } from "./script/seedAdmin";
 import { seedManager } from "./script/seedManager";
+import { seedSuperAdmin } from "./script/seedSuperAdmin";
+import { seedSeller } from "./script/seedSeller";
 const app: Application = express();
 
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), "src/app/templates"));
 
-app.use(express.json());
-app.use(cookieParser());
-// Enable URL-encoded from data parsing
-app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
@@ -35,6 +33,9 @@ app.use(
     credentials: true,
   }),
 );
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
@@ -53,8 +54,10 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get("/seed", async (req: Request, res: Response) => {
+  await seedSuperAdmin();
   await seedAdmin();
   await seedManager();
+  await seedSeller();
 
   res.status(200).json({
     success: true,
@@ -67,7 +70,7 @@ app.use("/api", MedicinesRoutes);
 app.use("/api/categories", CategoriesRouter);
 app.use("/api", OrdersRoutes);
 app.use("/api", ReviewRoutes);
-app.use("/api/auth", AuthRoutes);
+app.use("/api/auths", AuthRoutes);
 
 app.use(errorHandler);
 app.use(notFoundRoutes);

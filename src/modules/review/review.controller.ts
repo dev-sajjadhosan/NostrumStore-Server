@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { ReviewService } from "./review.service";
-import { paginationHelpers } from "../../helpers/paginationHelpers";
+import { IQueryParams } from "../../interface/query.interface";
 
 const createReview = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
@@ -18,16 +18,18 @@ const createReview = catchAsync(async (req: Request, res: Response) => {
 
 const getAllOrderReviewByMedicineId = catchAsync(
   async (req: Request, res: Response) => {
-    const user = req?.user;
     const { id } = req.params;
+    const query: IQueryParams = {
+      searchTerm: req.query.searchTerm as string,
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+      sortBy: req.query.sortBy as string,
+      sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      fields: req.query.fields as string,
+      includes: req.query.includes as string,
+    };
 
-    const options = paginationHelpers(req.query);
-
-    const result = await ReviewService.getAllOrderReviewByMedicineId({
-      user,
-      options,
-      id,
-    } as any);
+    const result = await ReviewService.getAllOrderReviewByMedicineId(query, id);
 
     res.status(200).json({
       success: true,
@@ -52,16 +54,18 @@ const createOrderReview = catchAsync(async (req: Request, res: Response) => {
 
 const getAllReviewByMedicineId = catchAsync(
   async (req: Request, res: Response) => {
-    const user = req?.user;
     const { id } = req.params;
+    const query: IQueryParams = {
+      searchTerm: req.query.searchTerm as string,
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+      sortBy: req.query.sortBy as string,
+      sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      fields: req.query.fields as string,
+      includes: req.query.includes as string,
+    };
 
-    const options = paginationHelpers(req.query);
-
-    const result = await ReviewService.getAllReviewByMedicineId({
-      user,
-      options,
-      id,
-    } as any);
+    const result = await ReviewService.getAllReviewByMedicineId(query, id);
 
     res.status(200).json({
       success: true,

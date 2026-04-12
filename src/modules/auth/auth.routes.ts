@@ -5,7 +5,6 @@ import { restrictRole } from "../../middleware/restrictRoles";
 
 const router = Router();
 
-router.post("/refresh-token", AuthController.getNewToken);
 router.post(
   "/change-password",
   protect,
@@ -21,5 +20,7 @@ router.post(
 router.post("/verify-email", AuthController.verifyEmail);
 router.post("/forget-password", AuthController.forgetPassword);
 router.post("/reset-password", AuthController.resetPassword);
+
+router.post("/send-verify-otp", protect, AuthController.sendVerifyOtp);
 
 export const AuthRoutes = router;

@@ -1,3 +1,4 @@
+import { Prisma, Medicines } from "../../../generated/prisma/client";
 import {
   MedicinesUpdateInput,
   MedicinesWhereInput,
@@ -5,172 +6,63 @@ import {
 import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilders";
+import {
+  medicinesSearchableFields,
+  medicinesFilterableFields,
+  medicinesIncludeConfig,
+} from "../../config/query.config";
+import { IQueryParams, IQueryResult } from "../../interface/query.interface";
 
-const getSellerAllMedicines = async ({
-  user,
-  search,
-  tags,
-  options,
-}: {
-  user: any;
-  search: string | undefined;
-  tags: string[] | [];
-  options: PgOptionsRs;
-}) => {
-  const { limit: take, page, skip, sortBy, sortOrder } = options;
-  const conditions: MedicinesWhereInput[] = [];
 
-  if (search) {
-    conditions.push({
-      OR: [
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          group: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          tags: {
-            has: search,
-          },
-        },
-        {
-          category: {
-            name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-        },
-      ],
-    });
-  }
-
-  if (tags.length > 0) {
-    conditions.push({
-      tags: {
-        hasEvery: tags,
-      },
-    });
-  }
-
-  const result = await prisma.medicines.findMany({
-    take,
-    skip,
-    where: {
-      AND: conditions,
-      sellerId: user?.id,
-    },
-    include: {
-      category: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+const getSellerAllMedicines = async (
+  query: IQueryParams,
+  userId: string,
+): Promise<IQueryResult<Medicines>> => {
+  const queryBuilder = new QueryBuilder<
+    Medicines,
+    Prisma.MedicinesWhereInput,
+    Prisma.MedicinesInclude
+  >(prisma.medicines, query, {
+    searchableFields: medicinesSearchableFields,
+    filterableFields: medicinesFilterableFields,
   });
 
-  const total = await prisma.medicines.count({
-    where: {
-      AND: conditions,
-    },
-  });
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({ sellerId: userId })
+    .dynamicInclude(medicinesIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  return {
-    data: result,
-    pagination: {
-      search,
-      page,
-      limit: take,
-      total,
-      pages: Math.ceil(total / take),
-    },
-  };
+  return result;
 };
 
-const getAllMedicines = async ({
-  search,
-  tags,
-  options,
-}: {
-  search: string | undefined;
-  tags: string[] | [];
-  options: PgOptionsRs;
-}) => {
-  const { limit: take, page, skip, sortBy, sortOrder } = options;
-  const conditions: MedicinesWhereInput[] = [];
-
-  if (search) {
-    conditions.push({
-      OR: [
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          group: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          tags: {
-            has: search,
-          },
-        },
-      ],
-    });
-  }
-
-  if (tags.length > 0) {
-    conditions.push({
-      tags: {
-        hasEvery: tags,
-      },
-    });
-  }
-
-  const result = await prisma.medicines.findMany({
-    take,
-    skip,
-    where: {
-      AND: conditions,
-    },
-    include: {
-      category: true,
-    },
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+const getAllMedicines = async (
+  query: IQueryParams,
+): Promise<IQueryResult<Medicines>> => {
+  const queryBuilder = new QueryBuilder<
+    Medicines,
+    Prisma.MedicinesWhereInput,
+    Prisma.MedicinesInclude
+  >(prisma.medicines, query, {
+    searchableFields: medicinesSearchableFields,
+    filterableFields: medicinesFilterableFields,
   });
 
-  const total = await prisma.medicines.count({
-    where: {
-      AND: conditions,
-    },
-  });
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .dynamicInclude(medicinesIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  return {
-    data: result,
-    pagination: {
-      search,
-      page,
-      limit: take,
-      total,
-      pages: Math.ceil(total / take),
-    },
-  };
+  return result;
 };
 
 const getSingleMedicineById = async (id: string) => {

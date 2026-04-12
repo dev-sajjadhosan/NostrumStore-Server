@@ -1,23 +1,26 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
-import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { MedicinesService } from "./medicines.service";
 import { MedicinesUpdateInput } from "../../../generated/prisma/models";
+import { IQueryParams } from "../../interface/query.interface";
 
 const getSellerAllMedicines = catchAsync(
   async (req: Request, res: Response) => {
-    const { search } = req.query;
     const user = req?.user;
-    const isSearch = typeof search === "string" ? search : undefined;
-    const tags = req.query.tags ? (req.query.tags as string).split(",") : [];
-    const options = paginationHelpers(req.query);
+    const query: IQueryParams = {
+      searchTerm: req.query.searchTerm as string,
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+      sortBy: req.query.sortBy as string,
+      sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      fields: req.query.fields as string,
+      includes: req.query.includes as string,
+    };
 
-    const { data, pagination } = await MedicinesService.getSellerAllMedicines({
-      user,
-      search: isSearch,
-      tags,
-      options,
-    });
+    const { data, meta } = await MedicinesService.getSellerAllMedicines(
+      query,
+      user?.id as string,
+    );
 
     if (data.length <= 0) {
       return res.status(200).json({
@@ -31,27 +34,28 @@ const getSellerAllMedicines = catchAsync(
     res.status(200).json({
       success: true,
       message: "Medicine fetched success.",
-      data: { data, pagination },
+      data: { data, meta },
     });
   },
 );
 
 const getAllMedicines = catchAsync(async (req: Request, res: Response) => {
-  const { search } = req.query;
-  const isSearch = typeof search === "string" ? search : undefined;
-  const tags = req.query.tags ? (req.query.tags as string).split(",") : [];
-  const options = paginationHelpers(req.query);
+  const query: IQueryParams = {
+    searchTerm: req.query.searchTerm as string,
+    page: req.query.page as string,
+    limit: req.query.limit as string,
+    sortBy: req.query.sortBy as string,
+    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+    fields: req.query.fields as string,
+    includes: req.query.includes as string,
+  };
 
-  const { data, pagination } = await MedicinesService.getAllMedicines({
-    search: isSearch,
-    tags,
-    options,
-  });
+  const { data, meta } = await MedicinesService.getAllMedicines(query);
 
   res.status(200).json({
     success: true,
     message: "Medicine fetched success.",
-    data: { data, pagination },
+    data: { data, meta },
   });
 });
 

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { OrderService } from "./orders.service";
-import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { OrdersStatus } from "../../../generated/prisma/enums";
+import { IQueryParams } from "../../interface/query.interface";
 
 const createOrder = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
@@ -19,17 +19,17 @@ const createOrder = catchAsync(async (req: Request, res: Response) => {
 
 const getAllUserOrders = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
-  const { search, status } = req.query;
-  const isSearch = typeof search === "string" ? search : undefined;
-  const isStatus = typeof status === "string" ? status : undefined;
-  const options = paginationHelpers(req.query);
+  const query: IQueryParams = {
+    searchTerm: req.query.searchTerm as string,
+    page: req.query.page as string,
+    limit: req.query.limit as string,
+    sortBy: req.query.sortBy as string,
+    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+    fields: req.query.fields as string,
+    includes: req.query.includes as string,
+  };
 
-  const result = await OrderService.getAllUserOrders({
-    user,
-    options,
-    search: isSearch,
-    status: isStatus,
-  });
+  const result = await OrderService.getAllUserOrders(query, user?.id as string);
 
   res.status(200).json({
     success: true,
@@ -53,17 +53,17 @@ const getOrderById = catchAsync(async (req: Request, res: Response) => {
 
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
-  const { search, status } = req.query;
-  const isSearch = typeof search === "string" ? search : undefined;
-  const isStatus = typeof status === "string" ? status : undefined;
-  const options = paginationHelpers(req.query);
+  const query: IQueryParams = {
+    searchTerm: req.query.searchTerm as string,
+    page: req.query.page as string,
+    limit: req.query.limit as string,
+    sortBy: req.query.sortBy as string,
+    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+    fields: req.query.fields as string,
+    includes: req.query.includes as string,
+  };
 
-  const result = await OrderService.getAllOrders({
-    user,
-    options,
-    search: isSearch,
-    status: isStatus,
-  });
+  const result = await OrderService.getAllOrders(query, user?.id as string);
 
   res.status(200).json({
     success: true,

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { UserService } from "./user.service";
-import { paginationHelpers } from "../../helpers/paginationHelpers";
 import { Role } from "../../../generated/prisma/enums";
+import { IQueryParams } from "../../interface/query.interface";
 
 const getUser = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
@@ -35,22 +35,17 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const user = req?.user;
-  const { search, status, role } = req.query;
-  const options = paginationHelpers(req.params);
+  const query: IQueryParams = {
+    searchTerm: req.query.searchTerm as string,
+    page: req.query.page as string,
+    limit: req.query.limit as string,
+    sortBy: req.query.sortBy as string,
+    sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+    fields: req.query.fields as string,
+    includes: req.query.includes as string,
+  };
 
-  console.log(status);
-
-  const isSearch = typeof search === "string" ? search : undefined;
-  const isStatus = typeof status === "string" ? status : undefined;
-  const isRole = typeof status === "string" ? role : undefined;
-
-  const result = await UserService.getAllUsers({
-    options,
-    search: isSearch,
-    user,
-    role: isRole as Role,
-    status: isStatus,
-  });
+  const result = await UserService.getAllUsers(query, user?.id as string);
 
   res.status(200).json({
     success: true,
@@ -136,5 +131,6 @@ export const UserController = {
   updateUserRole,
   sellerMetaData,
   adminMetaData,
-  updateProfile,getProfile
+  updateProfile,
+  getProfile,
 };

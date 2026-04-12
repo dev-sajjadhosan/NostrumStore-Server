@@ -1,66 +1,45 @@
+import { Prisma, Categories } from "../../../generated/prisma/client";
 import { CategoriesWhereInput } from "../../../generated/prisma/models";
 import { RequestUser } from "../../@types/express";
 import { PgOptionsRs } from "../../helpers/paginationHelpers";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilders";
+import {
+  categoriesSearchableFields,
+  categoriesFilterableFields,
+  categoriesIncludeConfig,
+} from "../../config/query.config";
+import { IQueryParams, IQueryResult } from "../../interface/query.interface";
+
 
 const createCategories = async ({ data }: { data: any }) => {
   return prisma.categories.create({
     data,
   });
 };
-const getAllCategories = async ({
-  search,
-  options,
-}: {
-  search: string;
-  options: PgOptionsRs;
-}) => {
-  const { page, limit: take, skip, sortBy, sortOrder } = options;
-  const result = await prisma.categories.findMany({
-    take,
-    skip,
-    where: {
-      AND: {
-        OR: [
-          {
-            name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-    },
-    include: { medicines: true },
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+
+const getAllCategories = async (
+  query: IQueryParams,
+): Promise<IQueryResult<Categories>> => {
+  const queryBuilder = new QueryBuilder<
+    Categories,
+    Prisma.CategoriesWhereInput,
+    Prisma.CategoriesInclude
+  >(prisma.categories, query, {
+    searchableFields: categoriesSearchableFields,
+    filterableFields: categoriesFilterableFields,
   });
 
-  const total = await prisma.categories.count({
-    where: {
-      AND: {
-        OR: [
-          {
-            name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-    },
-  });
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .dynamicInclude(categoriesIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
-  return {
-    data: result,
-    pagination: {
-      page,
-      pages: Math.ceil(total / take),
-      limit: take,
-      total,
-    },
-  };
+  return result;
 };
 const getSingleCategoriesById = async (id: string | undefined) => {
   return prisma.categories.findUniqueOrThrow({

@@ -1,27 +1,27 @@
 import { Role } from "../../generated/prisma/enums";
 import { prisma } from "../lib/prisma";
 
-export const seedAdmin = async () => {
+export const seedSuperAdmin = async () => {
   try {
-    const adminData = {
-      name: "Nostrum Store",
-      email: "nostrum@store.com",
+    const superAdminData = {
+      name: "Nostrum Store Super Admin",
+      email: "nostrum@store.super-admin.com",
       password: "password123",
-      role: Role.ADMIN,
+      role: Role.SUPER_ADMIN,
       emailVerified: true,
     };
 
     const isExist = await prisma.user.findUnique({
       where: {
-        email: adminData.email,
+        email: superAdminData.email,
       },
     });
 
     if (isExist) {
-      throw new Error("Admin Already Exist.");
+      throw new Error("Super Admin Already Exist.");
     }
 
-    const signUpAdmin = await fetch(
+    const signUpSuperAdmin = await fetch(
       `http://localhost:5000/api/auth/sign-up/email`,
       {
         method: "POST",
@@ -29,14 +29,14 @@ export const seedAdmin = async () => {
           "Content-Type": "application/json",
           Origin: "http://localhost:3000",
         },
-        body: JSON.stringify(adminData),
+        body: JSON.stringify(superAdminData),
       },
     );
 
-    if (signUpAdmin.ok) {
+    if (signUpSuperAdmin.ok) {
       await prisma.user.update({
         where: {
-          email: adminData.email,
+          email: superAdminData.email,
         },
         data: {
           emailVerified: true,
@@ -48,4 +48,4 @@ export const seedAdmin = async () => {
   }
 };
 
-// seedAdmin();
+// seedSuperAdmin();
